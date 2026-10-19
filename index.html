@@ -7,13 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; touch-action: none; font-family: 'Inter', sans-serif; }
+        body { margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
         
         /* 修复移动端 input 无法点击和输入文字的问题 */
         input, textarea {
-            -webkit-user-select: auto !important;
-            user-select: auto !important;
+            -webkit-user-select: text !important;
+            user-select: text !important;
             pointer-events: auto !important;
+            touch-action: auto !important;
         }
         
         /* 仅针对游戏按钮和非输入区域禁用选择 */
