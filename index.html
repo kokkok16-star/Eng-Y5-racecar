@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Grammar Racing Challenge</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -17,6 +17,7 @@
       touch-action: manipulation;
       -webkit-user-select: none;
       user-select: none;
+      -webkit-touch-callout: none;
     }
     canvas {
       display: block;
@@ -24,7 +25,7 @@
       height: 100%;
     }
     .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
+      width: 5px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
       background: #f1f1f1;
@@ -34,12 +35,9 @@
       background: #c5c5c5;
       border-radius: 10px;
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #a8a8a8;
-    }
   </style>
 </head>
-<body class="bg-slate-900 h-screen w-screen overflow-hidden text-slate-800 antialiased">
+<body class="bg-slate-900 h-screen w-screen overflow-hidden text-slate-800 antialiased select-none">
 
   <!-- 1. LOGIN & LEADERBOARD SCREEN -->
   <div id="screen-login" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-y-auto">
@@ -60,12 +58,12 @@
         <form id="login-form" onsubmit="handleLogin(event)" class="space-y-3 sm:space-y-4">
           <div>
             <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">学生姓名 / Student Name:</label>
-            <input type="text" id="input-name" required placeholder="例如: 张小明 / Tan Ah Kow" class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm sm:text-base transition">
+            <input type="text" id="input-name" required placeholder="例如: 张小明 / Tan Ah Kow" class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm sm:text-base transition">
           </div>
 
           <div>
             <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">教育部邮箱 / Email (@moe-dl.edu.my):</label>
-            <input type="email" id="input-email" required placeholder="m-1234567@moe-dl.edu.my" class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm sm:text-base transition">
+            <input type="email" id="input-email" required placeholder="m-1234567@moe-dl.edu.my" class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm sm:text-base transition">
             <p id="login-error" class="text-red-500 text-xs mt-1 hidden font-semibold">❌ 邮箱必须以 @moe-dl.edu.my 结尾！</p>
           </div>
 
@@ -76,7 +74,7 @@
       </div>
 
       <!-- Leaderboard Right -->
-      <div class="lg:col-span-5 bg-indigo-50/70 border border-indigo-100 rounded-2xl p-4 flex flex-col h-[280px] sm:h-[360px]">
+      <div class="lg:col-span-5 bg-indigo-50/70 border border-indigo-100 rounded-2xl p-4 flex flex-col h-[260px] sm:h-[360px]">
         <div class="flex items-center justify-between mb-3 border-b border-indigo-100 pb-2">
           <h2 class="font-bold text-indigo-900 text-sm sm:text-base flex items-center gap-1.5">
             🏆 实时英雄榜 (Leaderboard)
@@ -93,64 +91,64 @@
   </div>
 
   <!-- 2. GAME HUD & 3D RACE SCREEN -->
-  <div id="screen-game" class="fixed inset-0 z-10 hidden">
+  <div id="screen-game" class="fixed inset-0 z-10 hidden overflow-hidden">
     <!-- 3D Canvas -->
     <div id="canvas-container" class="w-full h-full"></div>
 
     <!-- HUD Overlay Top Header -->
     <div class="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
-      <div class="bg-slate-900/80 backdrop-blur-md border border-white/20 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl shadow-lg flex items-center gap-3">
-        <span id="hud-player" class="font-bold text-xs sm:text-sm text-indigo-300">Player</span>
+      <div class="bg-slate-900/80 backdrop-blur-md border border-white/20 text-white px-3 py-1.5 rounded-2xl shadow-lg flex items-center gap-2 sm:gap-3">
+        <span id="hud-player" class="font-bold text-xs sm:text-sm text-indigo-300 truncate max-w-[100px] sm:max-w-none">Player</span>
         <span class="text-slate-500">|</span>
-        <span id="hud-progress" class="font-extrabold text-xs sm:text-sm text-yellow-400">题数: 1 / 20</span>
+        <span id="hud-progress" class="font-extrabold text-xs sm:text-sm text-yellow-400">1 / 20</span>
       </div>
 
-      <div class="bg-slate-900/80 backdrop-blur-md border border-white/20 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl shadow-lg">
+      <div class="bg-slate-900/80 backdrop-blur-md border border-white/20 text-white px-3 py-1.5 rounded-2xl shadow-lg">
         <span id="hud-score" class="font-extrabold text-xs sm:text-sm text-emerald-400">得分: 0</span>
       </div>
     </div>
 
     <!-- Feedback Message Overlay (Correct/Incorrect) -->
-    <div id="feedback-overlay" class="absolute inset-x-0 top-16 sm:top-20 z-30 flex justify-center pointer-events-none transition-all duration-300 opacity-0 transform -translate-y-4">
-      <div id="feedback-card" class="px-6 py-2.5 rounded-2xl shadow-2xl font-black text-sm sm:text-lg flex items-center gap-2 border">
+    <div id="feedback-overlay" class="absolute inset-x-0 top-14 sm:top-20 z-30 flex justify-center pointer-events-none transition-all duration-300 opacity-0 transform -translate-y-4 px-4">
+      <div id="feedback-card" class="px-5 py-2 rounded-2xl shadow-2xl font-black text-xs sm:text-base flex items-center gap-2 border text-center">
         <span id="feedback-icon"></span>
         <span id="feedback-text"></span>
       </div>
     </div>
 
-    <!-- COMPACT & NON-BLOCKING QUESTION OVERLAY (BOTTOM) -->
-    <div id="question-card" class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[92%] max-w-xl bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-2xl rounded-2xl p-3 sm:p-5 z-20 transition-all duration-300 max-h-[50vh] flex flex-col justify-between">
+    <!-- MOBILE-OPTIMIZED BOTTOM CONTROLS & QUESTION CONTAINER (SIDE-BY-SIDE, NO OVERLAP) -->
+    <div class="absolute bottom-3 inset-x-2 sm:inset-x-4 z-30 flex items-end gap-2 max-w-3xl mx-auto pointer-events-none">
       
-      <!-- Question Content -->
-      <div class="overflow-y-auto custom-scrollbar pr-1 mb-2">
-        <div class="flex items-center justify-between text-xs font-bold text-indigo-600 mb-1">
-          <span id="q-unit-tag">UNIT 5</span>
-          <span id="q-drive-timer" class="text-amber-600 font-extrabold hidden">⚡ 驱动中: 5s</span>
+      <!-- Left: Question Card -->
+      <div id="question-card" class="flex-1 bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-2xl rounded-2xl p-3 sm:p-4 pointer-events-auto max-h-[55vh] flex flex-col justify-between overflow-hidden">
+        <div class="overflow-y-auto custom-scrollbar pr-1 mb-2">
+          <div class="flex items-center justify-between text-[11px] sm:text-xs font-bold text-indigo-600 mb-1">
+            <span id="q-unit-tag">UNIT 5</span>
+            <span id="q-drive-timer" class="text-amber-600 font-extrabold hidden">⚡ 驱动中: 5s</span>
+          </div>
+          <h3 id="q-text" class="text-xs sm:text-base font-bold text-slate-800 leading-snug">
+            Question loading...
+          </h3>
+          <div id="q-image-container" class="mt-1.5 hidden">
+            <img id="q-image" src="" alt="Question Image" class="max-h-20 sm:max-h-28 rounded-lg mx-auto object-contain border">
+          </div>
         </div>
-        <h3 id="q-text" class="text-sm sm:text-base font-bold text-slate-800 leading-snug">
-          Question loading...
-        </h3>
-        <div id="q-image-container" class="mt-2 hidden">
-          <img id="q-image" src="" alt="Question Image" class="max-h-24 sm:max-h-32 rounded-lg mx-auto object-contain border">
+
+        <!-- Options Grid -->
+        <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
+          <!-- Options populated dynamically -->
         </div>
       </div>
 
-      <!-- Options Grid -->
-      <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <!-- Options populated dynamically -->
+      <!-- Right: Dedicated Drive Button -->
+      <div class="flex flex-col items-center flex-shrink-0 pointer-events-auto">
+        <button id="btn-drive" 
+                class="w-14 h-14 sm:w-20 sm:h-20 bg-gradient-to-t from-emerald-600 to-emerald-400 border-4 border-white text-white rounded-full shadow-2xl flex items-center justify-center text-xl sm:text-3xl font-extrabold transition touch-none select-none opacity-40 cursor-not-allowed active:scale-90">
+          ⬆️
+        </button>
+        <span class="text-[9px] sm:text-xs text-white font-bold drop-shadow mt-1 bg-slate-900/70 px-2 py-0.5 rounded-full whitespace-nowrap">长按前进</span>
       </div>
-    </div>
 
-    <!-- SINGLE DRIVE BUTTON (FLOATING BOTTOM RIGHT / CENTER MOBILE) -->
-    <div class="absolute bottom-5 right-5 sm:bottom-8 sm:right-8 z-30 flex flex-col items-center">
-      <button id="btn-drive" 
-              onpointerdown="startDrive()" 
-              onpointerup="stopDrive()" 
-              onpointerleave="stopDrive()"
-              class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-t from-emerald-600 to-emerald-400 border-4 border-white text-white rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-extrabold active:scale-95 transition touch-none select-none opacity-40 cursor-not-allowed">
-        ⬆️
-      </button>
-      <span class="text-[10px] sm:text-xs text-white font-bold drop-shadow mt-1 bg-black/40 px-2 py-0.5 rounded-full">长按前进</span>
     </div>
   </div>
 
@@ -158,15 +156,15 @@
   <div id="modal-teacher" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl p-4 sm:p-6 flex flex-col max-h-[90vh]">
       <div class="flex items-center justify-between border-b pb-3 mb-4">
-        <h2 class="text-lg sm:text-xl font-bold text-slate-800">👩‍🏫 教师后台 (Teacher Dashboard)</h2>
+        <h2 class="text-base sm:text-xl font-bold text-slate-800">👩‍🏫 教师后台 (Teacher Dashboard)</h2>
         <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-slate-600 font-bold text-xl px-2">✕</button>
       </div>
 
       <!-- Auth Panel -->
       <div id="teacher-auth-panel" class="space-y-4 py-6 text-center">
-        <p class="text-sm text-slate-600">请输入教师访问密码：</p>
-        <input type="password" id="input-teacher-pass" placeholder="Password" class="px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none text-center">
-        <button onclick="verifyTeacherPassword()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition">验证进入</button>
+        <p class="text-xs sm:text-sm text-slate-600">请输入教师访问密码：</p>
+        <input type="password" id="input-teacher-pass" placeholder="Password" class="px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none text-center text-sm">
+        <button onclick="verifyTeacherPassword()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition text-sm">验证进入</button>
         <p id="teacher-auth-error" class="text-red-500 text-xs font-semibold hidden">密码不正确！</p>
       </div>
 
@@ -180,11 +178,11 @@
           <table class="w-full text-left border-collapse text-xs sm:text-sm">
             <thead class="bg-slate-100 sticky top-0 font-bold text-slate-700">
               <tr>
-                <th class="p-2.5 sm:p-3 border-b">学生姓名</th>
-                <th class="p-2.5 sm:p-3 border-b">邮箱</th>
-                <th class="p-2.5 sm:p-3 border-b">得分</th>
-                <th class="p-2.5 sm:p-3 border-b">用时</th>
-                <th class="p-2.5 sm:p-3 border-b">提交时间</th>
+                <th class="p-2 sm:p-3 border-b">学生姓名</th>
+                <th class="p-2 sm:p-3 border-b">邮箱</th>
+                <th class="p-2 sm:p-3 border-b">得分</th>
+                <th class="p-2 sm:p-3 border-b">用时</th>
+                <th class="p-2 sm:p-3 border-b">时间</th>
               </tr>
             </thead>
             <tbody id="teacher-table-body" class="divide-y divide-slate-100 text-slate-600">
@@ -214,9 +212,8 @@
     }
     const db = firebase.database();
 
-    // --- 2. QUESTION BANK (ENGLISH PLUS 1 UNITS 5, 6, 7) ---
+    // --- 2. QUESTION BANK ---
     const questionBank = [
-      // Unit 5: Food & Health
       { unit: "Unit 5", q: "There isn't ______ sugar in this tea.", options: ["many", "much", "some", "a lot"], answer: 1 },
       { unit: "Unit 5", q: "How ______ apples do you eat every week?", options: ["much", "many", "any", "some"], answer: 1 },
       { unit: "Unit 5", q: "We should eat ______ vegetables for good health.", options: ["a lot of", "much", "any", "an"], answer: 0 },
@@ -224,8 +221,6 @@
       { unit: "Unit 5", q: "I enjoy ______ fresh fruit juice in summer.", options: ["drink", "drinking", "drank", "drinks"], answer: 1 },
       { unit: "Unit 5", q: "Don't ______ too many sugary sweets.", options: ["eat", "eating", "eats", "ate"], answer: 0 },
       { unit: "Unit 5", q: "Is there ______ butter left in the fridge?", options: ["any", "many", "a", "few"], answer: 0 },
-      
-      // Unit 6: Sport
       { unit: "Unit 6", q: "There ______ a big football match yesterday.", options: ["is", "are", "was", "were"], answer: 2 },
       { unit: "Unit 6", q: "There ______ many fans at the stadium last night.", options: ["was", "were", "is", "are"], answer: 1 },
       { unit: "Unit 6", q: "She ______ a gold medal in the 200m race last year.", options: ["win", "wins", "won", "winning"], answer: 2 },
@@ -233,8 +228,6 @@
       { unit: "Unit 6", q: "Where ______ you go for sport practice last weekend?", options: ["do", "does", "did", "are"], answer: 2 },
       { unit: "Unit 6", q: "We ______ not win the match, but we played well.", options: ["did", "do", "were", "are"], answer: 0 },
       { unit: "Unit 6", q: "What ______ your favourite sport three years ago?", options: ["is", "are", "was", "were"], answer: 2 },
-
-      // Unit 7: Growing Up
       { unit: "Unit 7", q: "When I was young, my hair ______ curly.", options: ["is", "was", "were", "has"], answer: 1 },
       { unit: "Unit 7", q: "My grandmother ______ in a small village in 1960.", options: ["grew up", "grow up", "grows up", "growing up"], answer: 0 },
       { unit: "Unit 7", q: "Look at that photo! I didn't ______ glasses back then.", options: ["wore", "wear", "wears", "wearing"], answer: 1 },
@@ -248,7 +241,7 @@
     let currentQuestions = [];
     let currentQIndex = 0;
     let score = 0;
-    let driveTimeLeft = 0; // seconds remaining to drive
+    let driveTimeLeft = 0;
     let driveInterval = null;
     let isPressingDrive = false;
     let startTime = 0;
@@ -267,13 +260,12 @@
       const gain = audioCtx.createGain();
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-
       const now = audioCtx.currentTime;
 
       if (type === 'correct') {
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, now); // C5
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.3); // A5
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
         gain.gain.setValueAtTime(0.2, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
         osc.start(now);
@@ -297,20 +289,14 @@
       }
     }
 
-    // Engine loop sound
-    let engineOsc = null;
-    let engineGain = null;
-
+    let engineOsc = null, engineGain = null;
     function startEngineSound() {
-      if (!audioCtx) return;
-      if (engineOsc) return;
+      if (!audioCtx || engineOsc) return;
       engineOsc = audioCtx.createOscillator();
       engineGain = audioCtx.createGain();
-      
       engineOsc.type = 'triangle';
       engineOsc.frequency.setValueAtTime(80, audioCtx.currentTime);
       engineGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-
       engineOsc.connect(engineGain);
       engineGain.connect(audioCtx.destination);
       engineOsc.start();
@@ -326,8 +312,7 @@
 
     // --- 4. THREE.JS 3D RACING SYSTEM ---
     let scene, camera, renderer, kart;
-    let trackProgress = 0;
-    let targetProgress = 0;
+    let trackProgress = 0, targetProgress = 0;
 
     function init3D() {
       const container = document.getElementById('canvas-container');
@@ -337,10 +322,13 @@
       scene.background = new THREE.Color(0x70d6ff);
       scene.fog = new THREE.FogExp2(0x70d6ff, 0.015);
 
-      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const aspect = window.innerWidth / window.innerHeight;
+      const fov = aspect < 1 ? 72 : 60; // Dynamic FOV for mobile portrait
+      camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
       
-      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
       renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Fix mobile Retina distortion
       renderer.shadowMap.enabled = true;
       container.appendChild(renderer.domElement);
 
@@ -354,35 +342,31 @@
       scene.add(dirLight);
 
       // Ground
-      const groundGeo = new THREE.PlaneGeometry(1000, 1000);
-      const groundMat = new THREE.MeshLambertMaterial({ color: 0x71b48d });
-      const ground = new THREE.Mesh(groundGeo, groundMat);
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(1000, 1000),
+        new THREE.MeshLambertMaterial({ color: 0x71b48d })
+      );
       ground.rotation.x = -Math.PI / 2;
       ground.position.y = -0.1;
       scene.add(ground);
 
-      // Road Track
       createTrack();
-
-      // Kart / Car
       createKart();
-
-      // Environment Scenery
       createScenery();
 
+      window.removeEventListener('resize', onWindowResize);
       window.addEventListener('resize', onWindowResize);
       animate3D();
     }
 
     function createTrack() {
-      // Loop Road
-      const roadGeo = new THREE.RingGeometry(35, 45, 64);
-      const roadMat = new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide });
-      const road = new THREE.Mesh(roadGeo, roadMat);
+      const road = new THREE.Mesh(
+        new THREE.RingGeometry(35, 45, 64),
+        new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide })
+      );
       road.rotation.x = Math.PI / 2;
       scene.add(road);
 
-      // Inner & Outer Borders
       const borderMat = new THREE.MeshBasicMaterial({ color: 0xe63946 });
       const innerBorder = new THREE.Mesh(new THREE.RingGeometry(34.5, 35, 64), borderMat);
       innerBorder.rotation.x = Math.PI / 2;
@@ -398,20 +382,20 @@
     function createKart() {
       kart = new THREE.Group();
 
-      // Body
-      const bodyGeo = new THREE.BoxGeometry(1.2, 0.5, 2);
-      const bodyMat = new THREE.MeshStandardMaterial({ color: 0xff4757 });
-      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      // Proportional Kart Body
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(1.2, 0.6, 1.8),
+        new THREE.MeshStandardMaterial({ color: 0xff4757 })
+      );
       body.position.y = 0.4;
       kart.add(body);
 
       // Wheels
-      const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 16);
+      const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.25, 16);
       const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1e272e });
-
       const positions = [
-        [-0.7, 0.3, 0.7], [0.7, 0.3, 0.7],
-        [-0.7, 0.3, -0.7], [0.7, 0.3, -0.7]
+        [-0.7, 0.3, 0.6], [0.7, 0.3, 0.6],
+        [-0.7, 0.3, -0.6], [0.7, 0.3, -0.6]
       ];
 
       positions.forEach(pos => {
@@ -425,20 +409,20 @@
     }
 
     function createScenery() {
-      // Trees
-      for (let i = 0; i < 40; i++) {
-        const angle = (i / 40) * Math.PI * 2;
-        const radius = i % 2 === 0 ? 28 : 52;
+      for (let i = 0; i < 36; i++) {
+        const angle = (i / 36) * Math.PI * 2;
+        const radius = i % 2 === 0 ? 27 : 53;
         const x = Math.cos(angle) * radius;
         const z = Math.sin(angle) * radius;
 
-        const trunkGeo = new THREE.CylinderGeometry(0.2, 0.3, 2);
-        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8d6e63 });
-        const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-
-        const leavesGeo = new THREE.ConeGeometry(1.2, 2.5, 8);
-        const leavesMat = new THREE.MeshStandardMaterial({ color: 0x2ed573 });
-        const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+        const trunk = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.2, 0.3, 2),
+          new THREE.MeshStandardMaterial({ color: 0x8d6e63 })
+        );
+        const leaves = new THREE.Mesh(
+          new THREE.ConeGeometry(1.2, 2.5, 8),
+          new THREE.MeshStandardMaterial({ color: 0x2ed573 })
+        );
         leaves.position.y = 2;
 
         const tree = new THREE.Group();
@@ -452,14 +436,12 @@
     function animate3D() {
       requestAnimationFrame(animate3D);
 
-      // Smooth Movement Logic
       if (isPressingDrive && driveTimeLeft > 0) {
         targetProgress += 0.0015;
       }
 
       trackProgress += (targetProgress - trackProgress) * 0.1;
 
-      // Calculate Kart Position along circular track
       const radius = 40;
       const angle = trackProgress * Math.PI * 2;
       const x = Math.cos(angle) * radius;
@@ -470,26 +452,57 @@
         kart.rotation.y = -angle + Math.PI / 2;
       }
 
-      // Camera Follows Kart
+      // Camera Offset
+      const isPortrait = window.innerWidth < window.innerHeight;
+      const dist = isPortrait ? 7.5 : 6;
+      const camHeight = isPortrait ? 4.5 : 3.5;
+
       const camOffset = new THREE.Vector3(
-        Math.cos(angle - 0.25) * (radius + 6),
-        3.5,
-        Math.sin(angle - 0.25) * (radius + 6)
+        Math.cos(angle - 0.22) * (radius + dist),
+        camHeight,
+        Math.sin(angle - 0.22) * (radius + dist)
       );
       camera.position.lerp(camOffset, 0.1);
-      camera.lookAt(x, 1, z);
+      camera.lookAt(x, 0.8, z);
 
       renderer.render(scene, camera);
     }
 
     function onWindowResize() {
       if (!camera || !renderer) return;
-      camera.aspect = window.innerWidth / window.innerHeight;
+      const aspect = window.innerWidth / window.innerHeight;
+      camera.aspect = aspect;
+      camera.fov = aspect < 1 ? 72 : 60;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     }
 
-    // --- 5. GAME FLOW & LOGIC ---
+    // --- 5. CONTROLS BINDINGS (TOUCH & POINTER) ---
+    function setupDriveButtonEvents() {
+      const btn = document.getElementById('btn-drive');
+
+      const handleStart = (e) => {
+        e.preventDefault();
+        startDrive();
+      };
+
+      const handleEnd = (e) => {
+        e.preventDefault();
+        stopDrive();
+      };
+
+      // Pointer & Touch Events
+      btn.addEventListener('pointerdown', handleStart);
+      btn.addEventListener('pointerup', handleEnd);
+      btn.addEventListener('pointerleave', handleEnd);
+
+      btn.addEventListener('touchstart', handleStart, { passive: false });
+      btn.addEventListener('touchend', handleEnd, { passive: false });
+      btn.addEventListener('touchcancel', handleEnd, { passive: false });
+    }
+
+    // --- 6. GAME FLOW & LOGIC ---
     function handleLogin(e) {
       e.preventDefault();
       initAudio();
@@ -509,7 +522,6 @@
     }
 
     function startGame() {
-      // Shuffle & Select 20 Questions
       currentQuestions = [...questionBank].sort(() => Math.random() - 0.5).slice(0, 20);
       currentQIndex = 0;
       score = 0;
@@ -522,6 +534,7 @@
       document.getElementById('hud-player').innerText = currentStudent.name;
 
       init3D();
+      setupDriveButtonEvents();
       renderQuestion();
     }
 
@@ -533,12 +546,11 @@
 
       const q = currentQuestions[currentQIndex];
 
-      document.getElementById('hud-progress').innerText = `题数: ${currentQIndex + 1} / 20`;
+      document.getElementById('hud-progress').innerText = `${currentQIndex + 1} / 20`;
       document.getElementById('hud-score').innerText = `得分: ${score}`;
       document.getElementById('q-unit-tag').innerText = q.unit;
       document.getElementById('q-text').innerText = q.q;
 
-      // Image
       const imgContainer = document.getElementById('q-image-container');
       const img = document.getElementById('q-image');
       if (q.img) {
@@ -548,19 +560,17 @@
         imgContainer.classList.add('hidden');
       }
 
-      // Options
       const optionsGrid = document.getElementById('options-grid');
       optionsGrid.innerHTML = '';
 
       q.options.forEach((opt, idx) => {
         const btn = document.createElement('button');
-        btn.className = 'w-full py-2.5 px-3 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-950 font-semibold rounded-xl text-xs sm:text-sm transition text-center active:scale-95';
+        btn.className = 'w-full py-2 px-3 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-950 font-semibold rounded-xl text-xs sm:text-sm transition text-center active:scale-95';
         btn.innerText = opt;
         btn.onclick = () => selectAnswer(idx);
         optionsGrid.appendChild(btn);
       });
 
-      // Reset Drive Button State
       updateDriveButton(false);
     }
 
@@ -571,16 +581,15 @@
       if (isCorrect) {
         score++;
         playSound('correct');
-        showFeedback(true, '答对了！可以驾驶 5 秒 🚀');
+        showFeedback(true, '答对了！长按右侧按钮向前行驶 🚀');
         grantDriveTime(5);
       } else {
         playSound('wrong');
         const correctText = q.options[q.answer];
         showFeedback(false, `答错了！正确答案: ${correctText}`);
-        grantDriveTime(0); // Cannot drive on wrong answer
+        grantDriveTime(0);
       }
 
-      // Move to next question after small delay
       setTimeout(() => {
         currentQIndex++;
         renderQuestion();
@@ -594,10 +603,10 @@
       const textEl = document.getElementById('feedback-text');
 
       if (isCorrect) {
-        card.className = "px-6 py-2.5 rounded-2xl shadow-2xl font-black text-sm sm:text-lg flex items-center gap-2 border bg-emerald-500 text-white border-emerald-400";
+        card.className = "px-5 py-2 rounded-2xl shadow-2xl font-black text-xs sm:text-base flex items-center gap-2 border bg-emerald-500 text-white border-emerald-400";
         icon.innerText = "✅";
       } else {
-        card.className = "px-6 py-2.5 rounded-2xl shadow-2xl font-black text-sm sm:text-lg flex items-center gap-2 border bg-rose-500 text-white border-rose-400";
+        card.className = "px-5 py-2 rounded-2xl shadow-2xl font-black text-xs sm:text-base flex items-center gap-2 border bg-rose-500 text-white border-rose-400";
         icon.innerText = "❌";
       }
 
@@ -668,7 +677,6 @@
       playSound('finish');
       const timeSpentSeconds = Math.round((Date.now() - startTime) / 1000);
 
-      // Save Score to Firebase Realtime Database
       const record = {
         name: currentStudent.name,
         email: currentStudent.email,
@@ -681,13 +689,12 @@
 
       alert(`🎉 恭喜完成挑战！\n姓名: ${currentStudent.name}\n得分: ${score} / 20\n用时: ${timeSpentSeconds} 秒`);
 
-      // Return to Login Screen & Refresh Leaderboard
       document.getElementById('screen-game').classList.add('hidden');
       document.getElementById('screen-login').classList.remove('hidden');
       loadLeaderboard();
     }
 
-    // --- 6. LEADERBOARD & TEACHER DASHBOARD ---
+    // --- 7. LEADERBOARD & TEACHER DASHBOARD ---
     function loadLeaderboard() {
       const listContainer = document.getElementById('leaderboard-list');
       listContainer.innerHTML = '<p class="text-center text-slate-400 py-6">刷新排行中...</p>';
@@ -698,7 +705,6 @@
           data.push(child.val());
         });
 
-        // Sort descending by score, then ascending by timeSpent
         data.sort((a, b) => (b.score - a.score) || (a.timeSpent - b.timeSpent));
 
         if (data.length === 0) {
@@ -707,7 +713,7 @@
         }
 
         listContainer.innerHTML = data.map((item, index) => `
-          <div class="flex items-center justify-between p-2.5 rounded-xl ${index === 0 ? 'bg-amber-100/80 border border-amber-300' : 'bg-white border border-slate-100'}">
+          <div class="flex items-center justify-between p-2 rounded-xl ${index === 0 ? 'bg-amber-100/80 border border-amber-300' : 'bg-white border border-slate-100'}">
             <div class="flex items-center gap-2 overflow-hidden">
               <span class="font-bold text-xs ${index === 0 ? 'text-amber-600' : 'text-slate-400'} w-4">${index + 1}.</span>
               <span class="font-bold text-slate-800 truncate">${escapeHtml(item.name)}</span>
@@ -765,11 +771,11 @@
 
         tbody.innerHTML = data.map(item => `
           <tr class="hover:bg-slate-50 transition">
-            <td class="p-2.5 sm:p-3 border-b font-bold text-slate-800">${escapeHtml(item.name)}</td>
-            <td class="p-2.5 sm:p-3 border-b text-slate-500">${escapeHtml(item.email)}</td>
-            <td class="p-2.5 sm:p-3 border-b font-black text-indigo-600">${item.score} / 20</td>
-            <td class="p-2.5 sm:p-3 border-b text-slate-500">${item.timeSpent || 0} 秒</td>
-            <td class="p-2.5 sm:p-3 border-b text-slate-400 text-[11px]">${item.timestamp ? new Date(item.timestamp).toLocaleString() : '-'}</td>
+            <td class="p-2 sm:p-3 border-b font-bold text-slate-800">${escapeHtml(item.name)}</td>
+            <td class="p-2 sm:p-3 border-b text-slate-500">${escapeHtml(item.email)}</td>
+            <td class="p-2 sm:p-3 border-b font-black text-indigo-600">${item.score} / 20</td>
+            <td class="p-2 sm:p-3 border-b text-slate-500">${item.timeSpent || 0} 秒</td>
+            <td class="p-2 sm:p-3 border-b text-slate-400 text-[11px]">${item.timestamp ? new Date(item.timestamp).toLocaleString() : '-'}</td>
           </tr>
         `).join('');
       });
@@ -782,7 +788,6 @@
       })[m]);
     }
 
-    // Initial load
     window.onload = () => {
       loadLeaderboard();
     };
