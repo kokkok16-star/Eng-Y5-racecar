@@ -116,7 +116,7 @@
       </div>
     </div>
 
-    <!-- MOBILE-OPTIMIZED BOTTOM CONTROLS & QUESTION CONTAINER (SIDE-BY-SIDE, NO OVERLAP) -->
+    <!-- MOBILE & DESKTOP CONTROLS CONTAINER -->
     <div class="absolute bottom-3 inset-x-2 sm:inset-x-4 z-30 flex items-end gap-2 max-w-3xl mx-auto pointer-events-none">
       
       <!-- Left: Question Card -->
@@ -320,25 +320,28 @@
 
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x70d6ff);
-      scene.fog = new THREE.FogExp2(0x70d6ff, 0.015);
+      scene.fog = new THREE.FogExp2(0x70d6ff, 0.012);
 
       const aspect = window.innerWidth / window.innerHeight;
-      const fov = aspect < 1 ? 72 : 60; // Dynamic FOV for mobile portrait
+      const fov = aspect < 1 ? 72 : 60;
       camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
       
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Fix mobile Retina distortion
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       container.appendChild(renderer.domElement);
 
       // Lights
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
       scene.add(ambientLight);
 
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      dirLight.position.set(20, 40, 20);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+      dirLight.position.set(30, 50, 30);
       dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 1024;
+      dirLight.shadow.mapSize.height = 1024;
       scene.add(dirLight);
 
       // Ground
@@ -348,10 +351,11 @@
       );
       ground.rotation.x = -Math.PI / 2;
       ground.position.y = -0.1;
+      ground.receiveShadow = true;
       scene.add(ground);
 
       createTrack();
-      createKart();
+      createDetailed3DRaceCar(); // Advanced 3D Race Car
       createScenery();
 
       window.removeEventListener('resize', onWindowResize);
@@ -362,47 +366,116 @@
     function createTrack() {
       const road = new THREE.Mesh(
         new THREE.RingGeometry(35, 45, 64),
-        new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide })
+        new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide, roughness: 0.8 })
       );
       road.rotation.x = Math.PI / 2;
+      road.receiveShadow = true;
       scene.add(road);
 
-      const borderMat = new THREE.MeshBasicMaterial({ color: 0xe63946 });
-      const innerBorder = new THREE.Mesh(new THREE.RingGeometry(34.5, 35, 64), borderMat);
+      const borderMat = new THREE.MeshStandardMaterial({ color: 0xe63946, roughness: 0.5 });
+      const innerBorder = new THREE.Mesh(new THREE.RingGeometry(34.3, 35, 64), borderMat);
       innerBorder.rotation.x = Math.PI / 2;
       innerBorder.position.y = 0.01;
       scene.add(innerBorder);
 
-      const outerBorder = new THREE.Mesh(new THREE.RingGeometry(45, 45.5, 64), borderMat);
+      const outerBorder = new THREE.Mesh(new THREE.RingGeometry(45, 45.7, 64), borderMat);
       outerBorder.rotation.x = Math.PI / 2;
       outerBorder.position.y = 0.01;
       scene.add(outerBorder);
     }
 
-    function createKart() {
+    // --- DETAILED 3D SPORTS CAR MODEL ---
+    function createDetailed3DRaceCar() {
       kart = new THREE.Group();
 
-      // Proportional Kart Body
-      const body = new THREE.Mesh(
-        new THREE.BoxGeometry(1.2, 0.6, 1.8),
-        new THREE.MeshStandardMaterial({ color: 0xff4757 })
-      );
-      body.position.y = 0.4;
+      const carRedMat = new THREE.MeshStandardMaterial({ color: 0xe74c3c, metalness: 0.3, roughness: 0.3 });
+      const carBlackMat = new THREE.MeshStandardMaterial({ color: 0x2c3e50, roughness: 0.5 });
+      const glassMat = new THREE.MeshStandardMaterial({ color: 0x34495e, metalness: 0.8, roughness: 0.1, transparent: true, opacity: 0.8 });
+      const wheelRubberMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+      const wheelRimMat = new THREE.MeshStandardMaterial({ color: 0xecf0f1, metalness: 0.8, roughness: 0.2 });
+      const lightMat = new THREE.MeshBasicMaterial({ color: 0xf1c40f });
+      const tailLightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+      // 1. Lower Chassis Base
+      const chassis = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.25, 2.3), carBlackMat);
+      chassis.position.y = 0.25;
+      chassis.castShadow = true;
+      kart.add(chassis);
+
+      // 2. Main Aerodynamic Body
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 2.0), carRedMat);
+      body.position.y = 0.45;
+      body.castShadow = true;
       kart.add(body);
 
-      // Wheels
-      const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.25, 16);
-      const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1e272e });
-      const positions = [
-        [-0.7, 0.3, 0.6], [0.7, 0.3, 0.6],
-        [-0.7, 0.3, -0.6], [0.7, 0.3, -0.6]
+      // 3. Front Hood Slanted Scoop
+      const hood = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.2, 0.8), carRedMat);
+      hood.position.set(0, 0.4, 0.7);
+      hood.rotation.x = 0.15;
+      hood.castShadow = true;
+      kart.add(hood);
+
+      // 4. Cabin Cockpit & Glass Windshield
+      const cabin = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.4, 0.9), glassMat);
+      cabin.position.set(0, 0.75, -0.1);
+      cabin.castShadow = true;
+      kart.add(cabin);
+
+      // 5. Rear Spoiler / Wing
+      const wingPlate = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.3), carRedMat);
+      wingPlate.position.set(0, 0.95, -0.95);
+      wingPlate.castShadow = true;
+      kart.add(wingPlate);
+
+      const wingLeftStand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.3, 0.1), carBlackMat);
+      wingLeftStand.position.set(-0.45, 0.8, -0.95);
+      kart.add(wingLeftStand);
+
+      const wingRightStand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.3, 0.1), carBlackMat);
+      wingRightStand.position.set(0.45, 0.8, -0.95);
+      kart.add(wingRightStand);
+
+      // 6. Headlights & Taillights
+      const headLeft = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.08, 0.08), lightMat);
+      headLeft.position.set(-0.4, 0.48, 1.01);
+      kart.add(headLeft);
+
+      const headRight = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.08, 0.08), lightMat);
+      headRight.position.set(0.4, 0.48, 1.01);
+      kart.add(headRight);
+
+      const tailLeft = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 0.08), tailLightMat);
+      tailLeft.position.set(-0.35, 0.5, -1.01);
+      kart.add(tailLeft);
+
+      const tailRight = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 0.08), tailLightMat);
+      tailRight.position.set(0.35, 0.5, -1.01);
+      kart.add(tailRight);
+
+      // 7. Detailed 3D Wheels with Silver Rims
+      const wheelPositions = [
+        [-0.72, 0.32, 0.65],  // Front Left
+        [0.72, 0.32, 0.65],   // Front Right
+        [-0.72, 0.32, -0.65], // Rear Left
+        [0.72, 0.32, -0.65]   // Rear Right
       ];
 
-      positions.forEach(pos => {
-        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-        wheel.rotation.z = Math.PI / 2;
-        wheel.position.set(...pos);
-        kart.add(wheel);
+      wheelPositions.forEach(pos => {
+        const wheelGroup = new THREE.Group();
+
+        // Rubber Tire
+        const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.22, 24), wheelRubberMat);
+        tire.rotation.z = Math.PI / 2;
+        tire.castShadow = true;
+        wheelGroup.add(tire);
+
+        // Silver Rim
+        const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.23, 16), wheelRimMat);
+        rim.rotation.z = Math.PI / 2;
+        wheelGroup.add(rim);
+
+        wheelGroup.position.set(...pos);
+        kart.add(wheelGroup);
       });
 
       scene.add(kart);
@@ -419,11 +492,14 @@
           new THREE.CylinderGeometry(0.2, 0.3, 2),
           new THREE.MeshStandardMaterial({ color: 0x8d6e63 })
         );
+        trunk.castShadow = true;
+
         const leaves = new THREE.Mesh(
           new THREE.ConeGeometry(1.2, 2.5, 8),
           new THREE.MeshStandardMaterial({ color: 0x2ed573 })
         );
         leaves.position.y = 2;
+        leaves.castShadow = true;
 
         const tree = new THREE.Group();
         tree.add(trunk);
@@ -492,7 +568,6 @@
         stopDrive();
       };
 
-      // Pointer & Touch Events
       btn.addEventListener('pointerdown', handleStart);
       btn.addEventListener('pointerup', handleEnd);
       btn.addEventListener('pointerleave', handleEnd);
