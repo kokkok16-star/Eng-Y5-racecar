@@ -1,871 +1,837 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Grammar Racing Challenge</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      touch-action: manipulation;
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-touch-callout: none;
-    }
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 5px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 10px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #c5c5c5;
-      border-radius: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>English Racing Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; touch-action: none; font-family: 'Inter', sans-serif; }
+        #canvas-container { width: 100%; height: 50vh; display: block; }
+        #ui-container { width: 100%; height: 50vh; display: flex; flex-direction: column; }
+        .btn-option { transition: all 0.1s ease; }
+        .btn-option:active:not(:disabled) { transform: scale(0.95); }
+        .hidden { display: none !important; }
+        
+        /* 速度表渐变高度过渡 */
+        #speed-bar { transition: height 0.1s linear, background-color 0.1s linear; }
+    </style>
 </head>
-<body class="bg-slate-900 h-screen w-screen overflow-hidden text-slate-800 antialiased select-none">
+<body class="bg-gray-50 flex flex-col h-screen w-screen overflow-hidden">
 
-  <!-- 1. LOGIN & LEADERBOARD SCREEN -->
-  <div id="screen-login" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-y-auto">
-    <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 w-full max-w-5xl p-4 sm:p-8 my-auto grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
-      
-      <!-- Form Left -->
-      <div class="lg:col-span-7 space-y-4 sm:space-y-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl sm:text-4xl font-extrabold text-indigo-950 tracking-tight">Grammar Racing</h1>
-            <p class="text-xs sm:text-base text-indigo-600 font-medium">Year 5 English Plus 1 (Units 5 - 7)</p>
-          </div>
-          <button onclick="openTeacherModal()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-full border border-slate-300 font-semibold transition">
-            🔒 教师专区
-          </button>
+    <!-- 登录界面 -->
+    <div id="login-screen" class="absolute inset-0 bg-gradient-to-br from-yellow-400 via-lime-500 to-emerald-700 z-50 overflow-y-auto flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl p-6 md:p-10 relative">
+            <!-- 教师专区按钮 -->
+            <button onclick="showTeacherLogin()" class="absolute top-4 right-4 md:top-6 md:right-6 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm py-1.5 px-4 rounded-full flex items-center gap-2 transition-colors">
+                🔒 教师专区
+            </button>
+
+            <!-- 标题区 -->
+            <div class="text-center mb-8 mt-4 md:mt-0">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-lime-700 mb-2">English Racing Game</h1>
+                <p class="text-gray-500 text-sm md:text-base">英语语法趣味赛车挑战系统</p>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- 左侧表单 -->
+                <div class="flex-1 flex flex-col gap-5">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 text-sm">学生姓名 (中文 / 英文):</label>
+                        <input type="text" id="student-name" placeholder="例如: 张小明 / Tan Ah Kow" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 text-sm">教育部邮箱 (Email):</label>
+                        <input type="email" id="student-email" placeholder="例如: m-1234567@moe-dl.edu.my" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent">
+                    </div>
+                    <button onclick="startGame()" class="w-full bg-lime-600 hover:bg-lime-700 text-white font-bold py-4 rounded-lg text-lg shadow-lg transition-transform active:scale-95 mt-2 flex justify-center items-center gap-2">
+                        开始答题 🚀
+                    </button>
+                </div>
+
+                <!-- 右侧英雄榜 -->
+                <div class="flex-1 bg-gray-50 rounded-xl border border-gray-200 p-5">
+                    <h3 class="text-yellow-600 font-bold mb-4 flex items-center gap-2">
+                        🏆 实时英雄榜 (Live)
+                    </h3>
+                    <div id="leaderboard-container" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                        <div class="text-center text-gray-500 text-sm py-4">正在加载排行榜数据...</div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <form id="login-form" onsubmit="handleLogin(event)" class="space-y-3 sm:space-y-4">
-          <div>
-            <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">学生姓名 / Student Name:</label>
-            <input type="text" id="input-name" required placeholder="例如: 张小明 / Tan Ah Kow" class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm sm:text-base transition">
-          </div>
-
-          <div>
-            <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1">教育部邮箱 / Email (@moe-dl.edu.my):</label>
-            <input type="email" id="input-email" required placeholder="m-1234567@moe-dl.edu.my" class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm sm:text-base transition">
-            <p id="login-error" class="text-red-500 text-xs mt-1 hidden font-semibold">❌ 邮箱必须以 @moe-dl.edu.my 结尾！</p>
-          </div>
-
-          <button type="submit" class="w-full py-3 sm:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-base sm:text-lg rounded-xl shadow-lg transform active:scale-95 transition">
-            开始答题 🚀 (Start Race)
-          </button>
-        </form>
-      </div>
-
-      <!-- Leaderboard Right -->
-      <div class="lg:col-span-5 bg-indigo-50/70 border border-indigo-100 rounded-2xl p-4 flex flex-col h-[260px] sm:h-[360px]">
-        <div class="flex items-center justify-between mb-3 border-b border-indigo-100 pb-2">
-          <h2 class="font-bold text-indigo-900 text-sm sm:text-base flex items-center gap-1.5">
-            🏆 实时英雄榜 (Leaderboard)
-          </h2>
-          <button onclick="loadLeaderboard()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold">刷新</button>
-        </div>
-
-        <div id="leaderboard-list" class="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1 text-xs sm:text-sm">
-          <p class="text-center text-slate-400 py-8">加载排行榜中...</p>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 2. GAME HUD & 3D RACE SCREEN -->
-  <div id="screen-game" class="fixed inset-0 z-10 hidden overflow-hidden">
-    <!-- 3D Canvas -->
-    <div id="canvas-container" class="w-full h-full"></div>
-
-    <!-- HUD Overlay Top Header -->
-    <div class="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
-      <div class="bg-slate-900/80 backdrop-blur-md border border-white/20 text-white px-3 py-1.5 rounded-2xl shadow-lg flex items-center gap-2 sm:gap-3">
-        <span id="hud-player" class="font-bold text-xs sm:text-sm text-indigo-300 truncate max-w-[100px] sm:max-w-none">Player</span>
-        <span class="text-slate-500">|</span>
-        <span id="hud-progress" class="font-extrabold text-xs sm:text-sm text-yellow-400">1 / 20</span>
-      </div>
-
-      <div class="bg-slate-900/80 backdrop-blur-md border border-white/20 text-white px-3 py-1.5 rounded-2xl shadow-lg">
-        <span id="hud-score" class="font-extrabold text-xs sm:text-sm text-emerald-400">得分: 0</span>
-      </div>
     </div>
 
-    <!-- Feedback Message Overlay (Correct/Incorrect) -->
-    <div id="feedback-overlay" class="absolute inset-x-0 top-14 sm:top-20 z-30 flex justify-center pointer-events-none transition-all duration-300 opacity-0 transform -translate-y-4 px-4">
-      <div id="feedback-card" class="px-5 py-2 rounded-2xl shadow-2xl font-black text-xs sm:text-base flex items-center gap-2 border text-center">
-        <span id="feedback-icon"></span>
-        <span id="feedback-text"></span>
-      </div>
+    <!-- 游戏主界面 (初始隐藏) -->
+    <div id="game-screen" class="hidden flex flex-col h-full w-full">
+        <!-- 上半部分：3D 游戏画面 -->
+        <div id="canvas-container" class="relative bg-blue-200 select-none">
+            <canvas id="game-canvas" class="w-full h-full block"></canvas>
+            
+            <!-- 画布左侧的速度表 (新增) -->
+            <div id="speedometer" class="absolute left-4 bottom-4 w-12 h-36 md:w-16 md:h-48 bg-gray-900/80 rounded-full border-4 border-gray-700 flex flex-col items-center justify-end p-1 z-20 shadow-lg">
+                <div class="w-full h-full relative rounded-full overflow-hidden flex flex-col justify-end bg-gray-800">
+                    <div id="speed-bar" class="w-full bg-gradient-to-t from-green-400 via-yellow-400 to-red-500 rounded-full" style="height: 0%;"></div>
+                </div>
+                <div class="absolute top-3 text-gray-300 font-bold text-[10px] md:text-xs">km/h</div>
+                <div id="speed-text" class="absolute bottom-3 text-white font-bold text-sm md:text-lg">0</div>
+            </div>
+            
+            <!-- 画布上方的进度条(变更为总里程进度) -->
+            <div id="canvas-timer-bar-container" class="absolute top-0 left-0 w-full h-2 bg-gray-200/50 z-20">
+                <div id="canvas-timer-bar" class="bg-lime-500 h-full w-0 transition-all duration-100"></div>
+            </div>
+            
+            <!-- 画布右侧的出发按钮 (变更为长按) -->
+            <button id="canvas-drive-btn" class="absolute bottom-4 right-4 bg-lime-600 hover:bg-lime-700 active:bg-lime-800 text-white font-bold w-16 h-16 rounded-full shadow-[0_5px_15px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center z-20 border-4 border-white opacity-50 pointer-events-none select-none touch-none">
+                <span class="text-2xl mb-0.5 pointer-events-none">🚗</span>
+                <span class="text-[10px] uppercase tracking-wider leading-none pointer-events-none">Hold</span>
+            </button>
+        </div>
+
+        <!-- 下半部分：答题控制区域 -->
+        <div id="ui-container" class="bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-10 p-4 flex flex-col">
+            
+            <!-- 状态栏 -->
+            <div class="flex justify-between items-center mb-2 px-2">
+                <div class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full font-bold text-sm">
+                    Score: <span id="score-display">0</span>
+                </div>
+                <div class="bg-lime-100 text-lime-800 px-4 py-1 rounded-full font-bold text-sm">
+                    Question <span id="q-number">1</span>/<span id="q-total">20</span>
+                </div>
+            </div>
+
+            <!-- 题目区域 -->
+            <div class="flex-1 flex flex-col items-center justify-center overflow-y-auto">
+                <h2 id="question-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center mb-4 px-4">
+                    There _____ a tense football match yesterday.
+                </h2>
+                
+                <!-- 选项网格 -->
+                <div id="options-container" class="grid grid-cols-2 gap-3 w-full max-w-md px-2 transition-opacity duration-300">
+                    <!-- 按钮由 JS 动态生成 -->
+                </div>
+
+                <!-- 题目解析框 (新增) -->
+                <div id="explanation-container" class="hidden mt-4 p-4 bg-blue-50 border border-blue-100 text-blue-800 rounded-xl text-sm md:text-base w-full max-w-md mx-2 shadow-sm font-medium">
+                    <!-- 解析由 JS 动态生成 -->
+                </div>
+                
+                <!-- Continue 按钮 (新增) -->
+                <button id="continue-btn" onclick="nextQuestion()" class="hidden mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl text-lg shadow-md transition-transform active:scale-95">Continue ➡️</button>
+            </div>
+            
+        </div>
     </div>
 
-    <!-- MOBILE & DESKTOP CONTROLS CONTAINER -->
-    <div class="absolute bottom-3 inset-x-2 sm:inset-x-4 z-30 flex items-end gap-2 max-w-3xl mx-auto pointer-events-none">
-      
-      <!-- Left: Question Card -->
-      <div id="question-card" class="flex-1 bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-2xl rounded-2xl p-3 sm:p-4 pointer-events-auto max-h-[55vh] flex flex-col justify-between overflow-hidden">
-        <div class="overflow-y-auto custom-scrollbar pr-1 mb-2">
-          <div class="flex items-center justify-between text-[11px] sm:text-xs font-bold text-indigo-600 mb-1">
-            <span id="q-unit-tag">UNIT 5</span>
-            <span id="q-drive-timer" class="text-amber-600 font-extrabold hidden">⚡ 驱动中: 5s</span>
-          </div>
-          <h3 id="q-text" class="text-xs sm:text-base font-bold text-slate-800 leading-snug">
-            Question loading...
-          </h3>
-          <div id="q-image-container" class="mt-1.5 hidden">
-            <img id="q-image" src="" alt="Question Image" class="max-h-20 sm:max-h-28 rounded-lg mx-auto object-contain border">
-          </div>
+    <!-- 自定义弹窗 (避免使用 alert) -->
+    <div id="message-modal" class="hidden absolute inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full text-center">
+            <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-2">提示</h3>
+            <p id="modal-msg" class="text-gray-600 mb-6">这里是消息内容。</p>
+            <!-- 密码输入区域 (仅教师专区显示) -->
+            <div id="password-area" class="hidden mb-6">
+                <input type="password" id="teacher-pwd" placeholder="请输入密码" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500">
+            </div>
+            <div class="flex justify-center gap-3">
+                <button id="modal-cancel-btn" onclick="closeModal()" class="hidden bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">取消</button>
+                <button id="modal-ok-btn" onclick="closeModal()" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-6 rounded-lg">确定</button>
+            </div>
         </div>
-
-        <!-- Options Grid -->
-        <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
-          <!-- Options populated dynamically -->
-        </div>
-      </div>
-
-      <!-- Right: Dedicated Drive Button -->
-      <div class="flex flex-col items-center flex-shrink-0 pointer-events-auto">
-        <button id="btn-drive" 
-                class="w-14 h-14 sm:w-20 sm:h-20 bg-gradient-to-t from-emerald-600 to-emerald-400 border-4 border-white text-white rounded-full shadow-2xl flex items-center justify-center text-xl sm:text-3xl font-extrabold transition touch-none select-none opacity-40 cursor-not-allowed active:scale-90">
-          ⬆️
-        </button>
-        <span class="text-[9px] sm:text-xs text-white font-bold drop-shadow mt-1 bg-slate-900/70 px-2 py-0.5 rounded-full whitespace-nowrap">长按前进</span>
-      </div>
-
     </div>
-  </div>
 
-  <!-- 3. TEACHER DASHBOARD MODAL -->
-  <div id="modal-teacher" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl p-4 sm:p-6 flex flex-col max-h-[90vh]">
-      <div class="flex items-center justify-between border-b pb-3 mb-4">
-        <h2 class="text-base sm:text-xl font-bold text-slate-800">👩‍🏫 教师后台 (Teacher Dashboard)</h2>
-        <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-slate-600 font-bold text-xl px-2">✕</button>
-      </div>
-
-      <!-- Auth Panel -->
-      <div id="teacher-auth-panel" class="space-y-4 py-6 text-center">
-        <p class="text-xs sm:text-sm text-slate-600">请输入教师访问密码：</p>
-        <input type="password" id="input-teacher-pass" placeholder="Password" class="px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none text-center text-sm">
-        <button onclick="verifyTeacherPassword()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition text-sm">验证进入</button>
-        <p id="teacher-auth-error" class="text-red-500 text-xs font-semibold hidden">密码不正确！</p>
-      </div>
-
-      <!-- Content Panel -->
-      <div id="teacher-content-panel" class="hidden flex-1 flex flex-col overflow-hidden">
-        <div class="flex justify-between items-center mb-3">
-          <span class="text-xs sm:text-sm font-semibold text-slate-500">所有学生成绩记录:</span>
-          <button onclick="loadTeacherScores()" class="text-xs bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-lg">刷新数据</button>
-        </div>
-        <div class="flex-1 overflow-y-auto border rounded-xl custom-scrollbar">
-          <table class="w-full text-left border-collapse text-xs sm:text-sm">
-            <thead class="bg-slate-100 sticky top-0 font-bold text-slate-700">
-              <tr>
-                <th class="p-2 sm:p-3 border-b">学生姓名</th>
-                <th class="p-2 sm:p-3 border-b">邮箱</th>
-                <th class="p-2 sm:p-3 border-b">得分</th>
-                <th class="p-2 sm:p-3 border-b">用时</th>
-                <th class="p-2 sm:p-3 border-b">时间</th>
-              </tr>
-            </thead>
-            <tbody id="teacher-table-body" class="divide-y divide-slate-100 text-slate-600">
-              <!-- Dynamic Rows -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- GAME SCRIPT -->
-  <script>
-    // --- 1. FIREBASE INITIALIZATION ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyDJFJq12eGnQO9UiyFuwK5V2qvRvv_NfuU",
-      authDomain: "eng-y5-racecar.firebaseapp.com",
-      projectId: "eng-y5-racecar",
-      storageBucket: "eng-y5-racecar.firebasestorage.app",
-      messagingSenderId: "628715478919",
-      appId: "1:628715478919:web:100ed05292df9983c3fd22",
-      measurementId: "G-BP6HPTZ9W7"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.database();
-
-    // --- 2. QUESTION BANK ---
-    const questionBank = [
-      { unit: "Unit 5", q: "There isn't ______ sugar in this tea.", options: ["many", "much", "some", "a lot"], answer: 1 },
-      { unit: "Unit 5", q: "How ______ apples do you eat every week?", options: ["much", "many", "any", "some"], answer: 1 },
-      { unit: "Unit 5", q: "We should eat ______ vegetables for good health.", options: ["a lot of", "much", "any", "an"], answer: 0 },
-      { unit: "Unit 5", q: "______ your vegetables before cooking!", options: ["Washing", "Wash", "Washes", "Washed"], answer: 1 },
-      { unit: "Unit 5", q: "I enjoy ______ fresh fruit juice in summer.", options: ["drink", "drinking", "drank", "drinks"], answer: 1 },
-      { unit: "Unit 5", q: "Don't ______ too many sugary sweets.", options: ["eat", "eating", "eats", "ate"], answer: 0 },
-      { unit: "Unit 5", q: "Is there ______ butter left in the fridge?", options: ["any", "many", "a", "few"], answer: 0 },
-      { unit: "Unit 6", q: "There ______ a big football match yesterday.", options: ["is", "are", "was", "were"], answer: 2 },
-      { unit: "Unit 6", q: "There ______ many fans at the stadium last night.", options: ["was", "were", "is", "are"], answer: 1 },
-      { unit: "Unit 6", q: "She ______ a gold medal in the 200m race last year.", options: ["win", "wins", "won", "winning"], answer: 2 },
-      { unit: "Unit 6", q: "They ______ basketball after school yesterday.", options: ["play", "played", "playing", "plays"], answer: 1 },
-      { unit: "Unit 6", q: "Where ______ you go for sport practice last weekend?", options: ["do", "does", "did", "are"], answer: 2 },
-      { unit: "Unit 6", q: "We ______ not win the match, but we played well.", options: ["did", "do", "were", "are"], answer: 0 },
-      { unit: "Unit 6", q: "What ______ your favourite sport three years ago?", options: ["is", "are", "was", "were"], answer: 2 },
-      { unit: "Unit 7", q: "When I was young, my hair ______ curly.", options: ["is", "was", "were", "has"], answer: 1 },
-      { unit: "Unit 7", q: "My grandmother ______ in a small village in 1960.", options: ["grew up", "grow up", "grows up", "growing up"], answer: 0 },
-      { unit: "Unit 7", q: "Look at that photo! I didn't ______ glasses back then.", options: ["wore", "wear", "wears", "wearing"], answer: 1 },
-      { unit: "Unit 7", q: "Did he ______ a famous athlete when he was young?", options: ["become", "became", "becomes", "becoming"], answer: 0 },
-      { unit: "Unit 7", q: "She bought a new dress. She loved ______ color.", options: ["him", "it", "its", "her"], answer: 2 },
-      { unit: "Unit 7", q: "My parents ______ born in Malacca.", options: ["was", "were", "are", "is"], answer: 1 }
-    ];
-
-    // Game Variables
-    let currentStudent = { name: "", email: "" };
-    let currentQuestions = [];
-    let currentQIndex = 0;
-    let score = 0;
-    let driveTimeLeft = 0;
-    let driveInterval = null;
-    let isPressingDrive = false;
-    let startTime = 0;
-
-    // --- 3. AUDIO SYNTHESIZER ---
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    let audioCtx = null;
-
-    function initAudio() {
-      if (!audioCtx) audioCtx = new AudioCtx();
-    }
-
-    function playSound(type) {
-      if (!audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      const now = audioCtx.currentTime;
-
-      if (type === 'correct') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
-      } else if (type === 'wrong') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(90, now + 0.3);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
-      } else if (type === 'finish') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.8);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
-        osc.start(now);
-        osc.stop(now + 0.8);
-      }
-    }
-
-    let engineOsc = null, engineGain = null;
-    function startEngineSound() {
-      if (!audioCtx || engineOsc) return;
-      engineOsc = audioCtx.createOscillator();
-      engineGain = audioCtx.createGain();
-      engineOsc.type = 'triangle';
-      engineOsc.frequency.setValueAtTime(80, audioCtx.currentTime);
-      engineGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      engineOsc.connect(engineGain);
-      engineGain.connect(audioCtx.destination);
-      engineOsc.start();
-    }
-
-    function stopEngineSound() {
-      if (engineOsc) {
-        try { engineOsc.stop(); } catch(e){}
-        engineOsc = null;
-        engineGain = null;
-      }
-    }
-
-    // --- 4. THREE.JS 3D RACING SYSTEM ---
-    let scene, camera, renderer, kart;
-    let trackProgress = 0, targetProgress = 0;
-
-    function init3D() {
-      const container = document.getElementById('canvas-container');
-      container.innerHTML = '';
-
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x70d6ff);
-      scene.fog = new THREE.FogExp2(0x70d6ff, 0.012);
-
-      const aspect = window.innerWidth / window.innerHeight;
-      const fov = aspect < 1 ? 72 : 60;
-      camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
-      
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      container.appendChild(renderer.domElement);
-
-      // Lights
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-      scene.add(ambientLight);
-
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-      dirLight.position.set(30, 50, 30);
-      dirLight.castShadow = true;
-      dirLight.shadow.mapSize.width = 1024;
-      dirLight.shadow.mapSize.height = 1024;
-      scene.add(dirLight);
-
-      // Ground
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(1000, 1000),
-        new THREE.MeshLambertMaterial({ color: 0x71b48d })
-      );
-      ground.rotation.x = -Math.PI / 2;
-      ground.position.y = -0.1;
-      ground.receiveShadow = true;
-      scene.add(ground);
-
-      createTrack();
-      createDetailed3DRaceCar(); // Advanced 3D Race Car
-      createScenery();
-
-      window.removeEventListener('resize', onWindowResize);
-      window.addEventListener('resize', onWindowResize);
-      animate3D();
-    }
-
-    function createTrack() {
-      const road = new THREE.Mesh(
-        new THREE.RingGeometry(35, 45, 64),
-        new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide, roughness: 0.8 })
-      );
-      road.rotation.x = Math.PI / 2;
-      road.receiveShadow = true;
-      scene.add(road);
-
-      const borderMat = new THREE.MeshStandardMaterial({ color: 0xe63946, roughness: 0.5 });
-      const innerBorder = new THREE.Mesh(new THREE.RingGeometry(34.3, 35, 64), borderMat);
-      innerBorder.rotation.x = Math.PI / 2;
-      innerBorder.position.y = 0.01;
-      scene.add(innerBorder);
-
-      const outerBorder = new THREE.Mesh(new THREE.RingGeometry(45, 45.7, 64), borderMat);
-      outerBorder.rotation.x = Math.PI / 2;
-      outerBorder.position.y = 0.01;
-      scene.add(outerBorder);
-    }
-
-    // --- DETAILED 3D SPORTS CAR MODEL ---
-    function createDetailed3DRaceCar() {
-      kart = new THREE.Group();
-
-      const carRedMat = new THREE.MeshStandardMaterial({ color: 0xe74c3c, metalness: 0.3, roughness: 0.3 });
-      const carBlackMat = new THREE.MeshStandardMaterial({ color: 0x2c3e50, roughness: 0.5 });
-      const glassMat = new THREE.MeshStandardMaterial({ color: 0x34495e, metalness: 0.8, roughness: 0.1, transparent: true, opacity: 0.8 });
-      const wheelRubberMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
-      const wheelRimMat = new THREE.MeshStandardMaterial({ color: 0xecf0f1, metalness: 0.8, roughness: 0.2 });
-      const lightMat = new THREE.MeshBasicMaterial({ color: 0xf1c40f });
-      const tailLightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-
-      // 1. Lower Chassis Base
-      const chassis = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.25, 2.3), carBlackMat);
-      chassis.position.y = 0.25;
-      chassis.castShadow = true;
-      kart.add(chassis);
-
-      // 2. Main Aerodynamic Body
-      const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 2.0), carRedMat);
-      body.position.y = 0.45;
-      body.castShadow = true;
-      kart.add(body);
-
-      // 3. Front Hood Slanted Scoop
-      const hood = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.2, 0.8), carRedMat);
-      hood.position.set(0, 0.4, 0.7);
-      hood.rotation.x = 0.15;
-      hood.castShadow = true;
-      kart.add(hood);
-
-      // 4. Cabin Cockpit & Glass Windshield
-      const cabin = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.4, 0.9), glassMat);
-      cabin.position.set(0, 0.75, -0.1);
-      cabin.castShadow = true;
-      kart.add(cabin);
-
-      // 5. Rear Spoiler / Wing
-      const wingPlate = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.3), carRedMat);
-      wingPlate.position.set(0, 0.95, -0.95);
-      wingPlate.castShadow = true;
-      kart.add(wingPlate);
-
-      const wingLeftStand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.3, 0.1), carBlackMat);
-      wingLeftStand.position.set(-0.45, 0.8, -0.95);
-      kart.add(wingLeftStand);
-
-      const wingRightStand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.3, 0.1), carBlackMat);
-      wingRightStand.position.set(0.45, 0.8, -0.95);
-      kart.add(wingRightStand);
-
-      // 6. Headlights & Taillights
-      const headLeft = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.08, 0.08), lightMat);
-      headLeft.position.set(-0.4, 0.48, 1.01);
-      kart.add(headLeft);
-
-      const headRight = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.08, 0.08), lightMat);
-      headRight.position.set(0.4, 0.48, 1.01);
-      kart.add(headRight);
-
-      const tailLeft = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 0.08), tailLightMat);
-      tailLeft.position.set(-0.35, 0.5, -1.01);
-      kart.add(tailLeft);
-
-      const tailRight = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 0.08), tailLightMat);
-      tailRight.position.set(0.35, 0.5, -1.01);
-      kart.add(tailRight);
-
-      // 7. Detailed 3D Wheels with Silver Rims
-      const wheelPositions = [
-        [-0.72, 0.32, 0.65],  // Front Left
-        [0.72, 0.32, 0.65],   // Front Right
-        [-0.72, 0.32, -0.65], // Rear Left
-        [0.72, 0.32, -0.65]   // Rear Right
-      ];
-
-      wheelPositions.forEach(pos => {
-        const wheelGroup = new THREE.Group();
-
-        // Rubber Tire
-        const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.22, 24), wheelRubberMat);
-        tire.rotation.z = Math.PI / 2;
-        tire.castShadow = true;
-        wheelGroup.add(tire);
-
-        // Silver Rim
-        const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.23, 16), wheelRimMat);
-        rim.rotation.z = Math.PI / 2;
-        wheelGroup.add(rim);
-
-        wheelGroup.position.set(...pos);
-        kart.add(wheelGroup);
-      });
-
-      scene.add(kart);
-    }
-
-    function createScenery() {
-      for (let i = 0; i < 36; i++) {
-        const angle = (i / 36) * Math.PI * 2;
-        const radius = i % 2 === 0 ? 27 : 53;
-        const x = Math.cos(angle) * radius;
-        const z = Math.sin(angle) * radius;
-
-        const trunk = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.2, 0.3, 2),
-          new THREE.MeshStandardMaterial({ color: 0x8d6e63 })
-        );
-        trunk.castShadow = true;
-
-        const leaves = new THREE.Mesh(
-          new THREE.ConeGeometry(1.2, 2.5, 8),
-          new THREE.MeshStandardMaterial({ color: 0x2ed573 })
-        );
-        leaves.position.y = 2;
-        leaves.castShadow = true;
-
-        const tree = new THREE.Group();
-        tree.add(trunk);
-        tree.add(leaves);
-        tree.position.set(x, 1, z);
-        scene.add(tree);
-      }
-    }
-
-    function animate3D() {
-      requestAnimationFrame(animate3D);
-
-      if (isPressingDrive && driveTimeLeft > 0) {
-        targetProgress += 0.0015;
-      }
-
-      trackProgress += (targetProgress - trackProgress) * 0.1;
-
-      const radius = 40;
-      const angle = trackProgress * Math.PI * 2;
-      const x = Math.cos(angle) * radius;
-      const z = Math.sin(angle) * radius;
-
-      if (kart) {
-        kart.position.set(x, 0, z);
-        kart.rotation.y = -angle + Math.PI / 2;
-      }
-
-      // Camera Offset
-      const isPortrait = window.innerWidth < window.innerHeight;
-      const dist = isPortrait ? 7.5 : 6;
-      const camHeight = isPortrait ? 4.5 : 3.5;
-
-      const camOffset = new THREE.Vector3(
-        Math.cos(angle - 0.22) * (radius + dist),
-        camHeight,
-        Math.sin(angle - 0.22) * (radius + dist)
-      );
-      camera.position.lerp(camOffset, 0.1);
-      camera.lookAt(x, 0.8, z);
-
-      renderer.render(scene, camera);
-    }
-
-    function onWindowResize() {
-      if (!camera || !renderer) return;
-      const aspect = window.innerWidth / window.innerHeight;
-      camera.aspect = aspect;
-      camera.fov = aspect < 1 ? 72 : 60;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    }
-
-    // --- 5. CONTROLS BINDINGS (TOUCH & POINTER) ---
-    function setupDriveButtonEvents() {
-      const btn = document.getElementById('btn-drive');
-
-      const handleStart = (e) => {
-        e.preventDefault();
-        startDrive();
-      };
-
-      const handleEnd = (e) => {
-        e.preventDefault();
-        stopDrive();
-      };
-
-      btn.addEventListener('pointerdown', handleStart);
-      btn.addEventListener('pointerup', handleEnd);
-      btn.addEventListener('pointerleave', handleEnd);
-
-      btn.addEventListener('touchstart', handleStart, { passive: false });
-      btn.addEventListener('touchend', handleEnd, { passive: false });
-      btn.addEventListener('touchcancel', handleEnd, { passive: false });
-    }
-
-    // --- 6. GAME FLOW & LOGIC ---
-    function handleLogin(e) {
-      e.preventDefault();
-      initAudio();
-
-      const name = document.getElementById('input-name').value.trim();
-      const email = document.getElementById('input-email').value.trim().toLowerCase();
-      const errorEl = document.getElementById('login-error');
-
-      if (!email.endsWith('@moe-dl.edu.my')) {
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      errorEl.classList.add('hidden');
-
-      currentStudent = { name, email };
-      startGame();
-    }
-
-    function startGame() {
-      currentQuestions = [...questionBank].sort(() => Math.random() - 0.5).slice(0, 20);
-      currentQIndex = 0;
-      score = 0;
-      driveTimeLeft = 0;
-      startTime = Date.now();
-
-      document.getElementById('screen-login').classList.add('hidden');
-      document.getElementById('screen-game').classList.remove('hidden');
-
-      document.getElementById('hud-player').innerText = currentStudent.name;
-
-      init3D();
-      setupDriveButtonEvents();
-      renderQuestion();
-    }
-
-    function renderQuestion() {
-      if (currentQIndex >= currentQuestions.length) {
-        finishGame();
-        return;
-      }
-
-      const q = currentQuestions[currentQIndex];
-
-      document.getElementById('hud-progress').innerText = `${currentQIndex + 1} / 20`;
-      document.getElementById('hud-score').innerText = `得分: ${score}`;
-      document.getElementById('q-unit-tag').innerText = q.unit;
-      document.getElementById('q-text').innerText = q.q;
-
-      const imgContainer = document.getElementById('q-image-container');
-      const img = document.getElementById('q-image');
-      if (q.img) {
-        img.src = q.img;
-        imgContainer.classList.remove('hidden');
-      } else {
-        imgContainer.classList.add('hidden');
-      }
-
-      const optionsGrid = document.getElementById('options-grid');
-      optionsGrid.innerHTML = '';
-
-      q.options.forEach((opt, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'w-full py-2 px-3 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-950 font-semibold rounded-xl text-xs sm:text-sm transition text-center active:scale-95';
-        btn.innerText = opt;
-        btn.onclick = () => selectAnswer(idx);
-        optionsGrid.appendChild(btn);
-      });
-
-      updateDriveButton(false);
-    }
-
-    function selectAnswer(selectedIndex) {
-      const q = currentQuestions[currentQIndex];
-      const isCorrect = (selectedIndex === q.answer);
-
-      if (isCorrect) {
-        score++;
-        playSound('correct');
-        showFeedback(true, '答对了！长按右侧按钮向前行驶 🚀');
-        grantDriveTime(5);
-      } else {
-        playSound('wrong');
-        const correctText = q.options[q.answer];
-        showFeedback(false, `答错了！正确答案: ${correctText}`);
-        grantDriveTime(0);
-      }
-
-      setTimeout(() => {
-        currentQIndex++;
-        renderQuestion();
-      }, 1500);
-    }
-
-    function showFeedback(isCorrect, text) {
-      const overlay = document.getElementById('feedback-overlay');
-      const card = document.getElementById('feedback-card');
-      const icon = document.getElementById('feedback-icon');
-      const textEl = document.getElementById('feedback-text');
-
-      if (isCorrect) {
-        card.className = "px-5 py-2 rounded-2xl shadow-2xl font-black text-xs sm:text-base flex items-center gap-2 border bg-emerald-500 text-white border-emerald-400";
-        icon.innerText = "✅";
-      } else {
-        card.className = "px-5 py-2 rounded-2xl shadow-2xl font-black text-xs sm:text-base flex items-center gap-2 border bg-rose-500 text-white border-rose-400";
-        icon.innerText = "❌";
-      }
-
-      textEl.innerText = text;
-      overlay.classList.remove('opacity-0', '-translate-y-4');
-      overlay.classList.add('opacity-100', 'translate-y-0');
-
-      setTimeout(() => {
-        overlay.classList.add('opacity-0', '-translate-y-4');
-        overlay.classList.remove('opacity-100', 'translate-y-0');
-      }, 1400);
-    }
-
-    function grantDriveTime(seconds) {
-      clearInterval(driveInterval);
-      driveTimeLeft = seconds;
-
-      const driveTimerEl = document.getElementById('q-drive-timer');
-
-      if (seconds > 0) {
-        updateDriveButton(true);
-        driveTimerEl.classList.remove('hidden');
-        driveTimerEl.innerText = `⚡ 驱动中: ${driveTimeLeft}s`;
-
-        driveInterval = setInterval(() => {
-          driveTimeLeft--;
-          if (driveTimeLeft <= 0) {
-            clearInterval(driveInterval);
-            driveTimeLeft = 0;
-            updateDriveButton(false);
-            stopDrive();
-            driveTimerEl.classList.add('hidden');
-          } else {
-            driveTimerEl.innerText = `⚡ 驱动中: ${driveTimeLeft}s`;
-          }
-        }, 1000);
-      } else {
-        updateDriveButton(false);
-        stopDrive();
-        driveTimerEl.classList.add('hidden');
-      }
-    }
-
-    function updateDriveButton(enable) {
-      const btn = document.getElementById('btn-drive');
-      if (enable) {
-        btn.classList.remove('opacity-40', 'cursor-not-allowed');
-        btn.classList.add('opacity-100', 'cursor-pointer', 'animate-bounce');
-      } else {
-        btn.classList.add('opacity-40', 'cursor-not-allowed');
-        btn.classList.remove('opacity-100', 'cursor-pointer', 'animate-bounce');
-      }
-    }
-
-    function startDrive() {
-      if (driveTimeLeft > 0) {
-        isPressingDrive = true;
-        startEngineSound();
-      }
-    }
-
-    function stopDrive() {
-      isPressingDrive = false;
-      stopEngineSound();
-    }
-
-    function finishGame() {
-      playSound('finish');
-      const timeSpentSeconds = Math.round((Date.now() - startTime) / 1000);
-
-      const record = {
-        name: currentStudent.name,
-        email: currentStudent.email,
-        score: score,
-        timeSpent: timeSpentSeconds,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-      };
-
-      db.ref('scores').push(record);
-
-      alert(`🎉 恭喜完成挑战！\n姓名: ${currentStudent.name}\n得分: ${score} / 20\n用时: ${timeSpentSeconds} 秒`);
-
-      document.getElementById('screen-game').classList.add('hidden');
-      document.getElementById('screen-login').classList.remove('hidden');
-      loadLeaderboard();
-    }
-
-    // --- 7. LEADERBOARD & TEACHER DASHBOARD ---
-    function loadLeaderboard() {
-      const listContainer = document.getElementById('leaderboard-list');
-      listContainer.innerHTML = '<p class="text-center text-slate-400 py-6">刷新排行中...</p>';
-
-      db.ref('scores').orderByChild('score').limitToLast(10).once('value', snapshot => {
-        const data = [];
-        snapshot.forEach(child => {
-          data.push(child.val());
-        });
-
-        data.sort((a, b) => (b.score - a.score) || (a.timeSpent - b.timeSpent));
-
-        if (data.length === 0) {
-          listContainer.innerHTML = '<p class="text-center text-slate-400 py-6">暂无排名，快来挑战吧！</p>';
-          return;
+    <!-- 导入 Firebase 与作为模块运行的脚本 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 配置 Firebase
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'english-racing-default-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        let app, auth, db;
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase init error:", e);
         }
 
-        listContainer.innerHTML = data.map((item, index) => `
-          <div class="flex items-center justify-between p-2 rounded-xl ${index === 0 ? 'bg-amber-100/80 border border-amber-300' : 'bg-white border border-slate-100'}">
-            <div class="flex items-center gap-2 overflow-hidden">
-              <span class="font-bold text-xs ${index === 0 ? 'text-amber-600' : 'text-slate-400'} w-4">${index + 1}.</span>
-              <span class="font-bold text-slate-800 truncate">${escapeHtml(item.name)}</span>
-            </div>
-            <div class="text-right">
-              <span class="font-black text-indigo-600">${item.score}分</span>
-              <span class="text-[10px] text-slate-400">(${item.timeSpent || 0}s)</span>
-            </div>
-          </div>
-        `).join('');
-      });
-    }
+        const questions = [
+            { q: "I _____ a great movie last night.", options: ["see", "saw", "seen", "seeing"], correct: 1, exp: "解析：句末的 last night 表明动作发生在过去，因此需要使用动词的过去式 saw。" },
+            { q: "There _____ a tense football match yesterday.", options: ["was", "is", "are", "were"], correct: 0, exp: "解析：yesterday表示过去时，且主语 a tense football match 是单数，所以用 was。" },
+            { q: "She _____ to the park every morning.", options: ["go", "going", "goes", "gone"], correct: 2, exp: "解析：every morning 表示经常性习惯，一般现在时。主语 She 是第三人称单数，动词加 -es，即 goes。" },
+            { q: "They _____ playing tennis right now.", options: ["was", "is", "were", "are"], correct: 3, exp: "解析：right now 表示现在进行时，主语 They 是复数，所以搭配 be 动词 are。" },
+            { q: "He has _____ his homework already.", options: ["do", "did", "doing", "done"], correct: 3, exp: "解析：has + 动词过去分词构成现在完成时。do 的过去分词是 done。" },
+            { q: "We _____ to London next week.", options: ["travel", "travelled", "are travelling", "have travelled"], correct: 2, exp: "解析：next week 表将来，可以用现在进行时表按计划将要发生的动作。" },
+            { q: "If it rains tomorrow, we _____ at home.", options: ["stay", "will stay", "stayed", "are staying"], correct: 1, exp: "解析：主将从现，if条件句用一般现在时，主句用一般将来时。" },
+            { q: "She is the _____ girl in our class.", options: ["tall", "taller", "tallest", "most tall"], correct: 2, exp: "解析：in our class 表明是在三者或以上的范围内比较，用最高级。" },
+            { q: "I have been living here _____ 2010.", options: ["since", "for", "in", "from"], correct: 0, exp: "解析：since + 具体的过去时间点，常用于现在完成时。" },
+            { q: "He is interested _____ learning new languages.", options: ["on", "at", "in", "about"], correct: 2, exp: "解析：固定搭配 be interested in (对...感兴趣)。" },
+            { q: "Would you mind _____ the window?", options: ["open", "to open", "opening", "opened"], correct: 2, exp: "解析：mind doing sth. (介意做某事)。" },
+            { q: "The book _____ by a famous author last year.", options: ["wrote", "was written", "is written", "has written"], correct: 1, exp: "解析：主语 book 和 write 是被动关系，且 last year 表过去，用一般过去时的被动语态。" },
+            { q: "Neither he nor I _____ wrong.", options: ["is", "am", "are", "be"], correct: 1, exp: "解析：neither...nor... 连接主语时，谓语动词遵循就近原则，离 I 近，用 am。" },
+            { q: "It's time you _____ to bed.", options: ["go", "went", "going", "will go"], correct: 1, exp: "解析：It's time (that) sb. did sth. 是一种虚拟语气，用过去式。" },
+            { q: "By the time we arrived, the train _____.", options: ["left", "has left", "had left", "was leaving"], correct: 2, exp: "解析：by the time + 过去时的句子，主句常用过去完成时，表示在过去某个时间之前已经完成的动作。" },
+            { q: "He asked me _____.", options: ["where did I live", "where I lived", "where do I live", "where I live"], correct: 1, exp: "解析：宾语从句需用陈述句语序，且主句是过去时，从句也要用相应的过去时态。" },
+            { q: "I look forward to _____ from you soon.", options: ["hear", "hearing", "heard", "be heard"], correct: 1, exp: "解析：look forward to 中的 to 是介词，后面接动名词 v.-ing。" },
+            { q: "Hardly had I reached the station _____ the train left.", options: ["when", "than", "then", "and"], correct: 0, exp: "解析：固定句型 Hardly...when... (一...就...)。" },
+            { q: "She _____ have finished the work, but she was lazy.", options: ["must", "could", "should", "can"], correct: 1, exp: "解析：could have done 表示本可以做某事但实际上未做。" },
+            { q: "Not only _____ to the party, but she also brought a gift.", options: ["did she come", "she came", "she did come", "came she"], correct: 0, exp: "解析：Not only 置于句首，所在的句子需要部分倒装。" }
+        ];
 
-    function openTeacherModal() {
-      document.getElementById('modal-teacher').classList.remove('hidden');
-      document.getElementById('teacher-auth-panel').classList.remove('hidden');
-      document.getElementById('teacher-content-panel').classList.add('hidden');
-      document.getElementById('input-teacher-pass').value = '';
-    }
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let playerName = "";
+        
+        // 驾驶相关变量
+        let canDrive = false;
+        let isHoldingGo = false;
+        let driveTimeAccumulated = 0;
+        const TOTAL_DRIVE_TIME_NEEDED = 5000; // 每题需要开 5 秒
+        let moveProgress = 0; 
+        const PROGRESS_PER_QUESTION = 1 / questions.length; 
+        
+        // 渲染相关
+        let currentSpeed = 0; // 0 to 120 km/h
+        let lastTime = 0;
+        let hasAnsweredCurrentQuestion = false;
 
-    function closeTeacherModal() {
-      document.getElementById('modal-teacher').classList.add('hidden');
-    }
-
-    function verifyTeacherPassword() {
-      const pass = document.getElementById('input-teacher-pass').value;
-      const errorEl = document.getElementById('teacher-auth-error');
-
-      if (pass === '2020Hui%%') {
-        errorEl.classList.add('hidden');
-        document.getElementById('teacher-auth-panel').classList.add('hidden');
-        document.getElementById('teacher-content-panel').classList.remove('hidden');
-        loadTeacherScores();
-      } else {
-        errorEl.classList.remove('hidden');
-      }
-    }
-
-    function loadTeacherScores() {
-      const tbody = document.getElementById('teacher-table-body');
-      tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">加载中...</td></tr>';
-
-      db.ref('scores').once('value', snapshot => {
-        const data = [];
-        snapshot.forEach(child => {
-          data.push(child.val());
-        });
-
-        data.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-        if (data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">暂无答题记录</td></tr>';
-          return;
+        // ==========================================
+        // 1. Firebase 排行榜逻辑
+        // ==========================================
+        async function initFirebaseAndAuth() {
+            if (!auth) return;
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                // 监听公共排行榜数据
+                const lbRef = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
+                onSnapshot(lbRef, (snapshot) => {
+                    let records = [];
+                    snapshot.forEach(doc => records.push(doc.data()));
+                    // 在内存中排序 (遵守 Firestore No Complex Queries 规则)
+                    records.sort((a, b) => b.score - a.score);
+                    renderLeaderboard(records);
+                }, (error) => {
+                    console.error("Leaderboard sync failed:", error);
+                });
+            } catch (e) {
+                console.error("Auth failed:", e);
+            }
         }
 
-        tbody.innerHTML = data.map(item => `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="p-2 sm:p-3 border-b font-bold text-slate-800">${escapeHtml(item.name)}</td>
-            <td class="p-2 sm:p-3 border-b text-slate-500">${escapeHtml(item.email)}</td>
-            <td class="p-2 sm:p-3 border-b font-black text-indigo-600">${item.score} / 20</td>
-            <td class="p-2 sm:p-3 border-b text-slate-500">${item.timeSpent || 0} 秒</td>
-            <td class="p-2 sm:p-3 border-b text-slate-400 text-[11px]">${item.timestamp ? new Date(item.timestamp).toLocaleString() : '-'}</td>
-          </tr>
-        `).join('');
-      });
+        function renderLeaderboard(records) {
+            const container = document.getElementById('leaderboard-container');
+            container.innerHTML = '';
+            if (records.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-2">暂无排名数据</div>';
+                return;
+            }
+            records.forEach((record, index) => {
+                const rankColor = index === 0 ? 'text-yellow-500' : (index === 1 ? 'text-gray-400' : (index === 2 ? 'text-amber-600' : 'text-gray-400'));
+                container.innerHTML += `
+                    <div class="bg-white rounded-lg p-3 flex justify-between items-center shadow-sm border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <span class="${rankColor} font-bold text-lg">${index + 1}.</span>
+                            <span class="text-gray-800 font-medium">${record.name}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-emerald-700 font-bold">${record.score}分</span>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        async function submitScore() {
+            if (!auth || !auth.currentUser || !playerName) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', auth.currentUser.uid);
+                await setDoc(docRef, {
+                    name: playerName,
+                    score: score,
+                    timestamp: Date.now()
+                });
+            } catch (e) {
+                console.error("Score submit error:", e);
+            }
+        }
+
+        // ==========================================
+        // 2. 核心控制逻辑
+        // ==========================================
+        window.showMessage = function(title, msg, type = 'alert', onConfirm = null) {
+            document.getElementById('message-modal').classList.remove('hidden');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-msg').innerText = msg;
+            
+            const pwdArea = document.getElementById('password-area');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+            const okBtn = document.getElementById('modal-ok-btn');
+            
+            pwdArea.classList.add('hidden');
+            document.getElementById('teacher-pwd').value = '';
+            cancelBtn.classList.add('hidden');
+            
+            okBtn.onclick = () => {
+                if (onConfirm) onConfirm();
+                else window.closeModal();
+            };
+
+            if (type === 'prompt') {
+                pwdArea.classList.remove('hidden');
+                cancelBtn.classList.remove('hidden');
+                cancelBtn.onclick = window.closeModal;
+            }
+        }
+
+        window.closeModal = function() {
+            document.getElementById('message-modal').classList.add('hidden');
+        }
+
+        window.showTeacherLogin = function() {
+            window.showMessage("教师专区", "请输入教师管理密码：", "prompt", () => {
+                const pwd = document.getElementById('teacher-pwd').value;
+                if (pwd === '2020Hui%%') {
+                    window.closeModal();
+                    window.showMessage("登录成功", "欢迎进入教师后台！(演示功能)");
+                } else {
+                    window.showMessage("错误", "密码错误，请重试！");
+                }
+            });
+        }
+
+        window.startGame = function() {
+            const name = document.getElementById('student-name').value.trim();
+            const email = document.getElementById('student-email').value.trim();
+
+            if (!name) {
+                window.showMessage("输入错误", "请输入学生姓名！");
+                return;
+            }
+            if (!email.endsWith('@moe-dl.edu.my')) {
+                window.showMessage("格式错误", "邮箱必须以 @moe-dl.edu.my 结尾！");
+                return;
+            }
+
+            playerName = name;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            initAudio();
+            submitScore(); // 初始化提交 0 分
+            
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+                lastTime = performance.now();
+                loadQuestion();
+            }, 100);
+        }
+
+        // ==========================================
+        // 3. 游戏机制 (答题与长按驾驶)
+        // ==========================================
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            hasAnsweredCurrentQuestion = false;
+            canDrive = false;
+            driveTimeAccumulated = 0;
+            
+            document.getElementById('q-number').innerText = currentQuestionIndex + 1;
+            document.getElementById('question-text').innerText = q.q;
+            
+            // 重置 UI
+            document.getElementById('options-container').classList.remove('pointer-events-none');
+        document.getElementById('explanation-container').classList.add('hidden');
+        document.getElementById('canvas-drive-btn').classList.add('opacity-50', 'pointer-events-none');
+        document.getElementById('canvas-drive-btn').classList.remove('animate-pulse');
+        document.getElementById('continue-btn').classList.add('hidden');
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl text-lg w-full transition-colors shadow-sm';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(idx, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selectedIndex, btnElement) {
+            if (hasAnsweredCurrentQuestion) return; // 只能答一次
+            hasAnsweredCurrentQuestion = true;
+
+            const q = questions[currentQuestionIndex];
+            const allButtons = document.querySelectorAll('.btn-option');
+            
+            // 禁用所有按钮
+            document.getElementById('options-container').classList.add('pointer-events-none');
+            
+            // 标记正确和错误的视觉效果
+            allButtons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.correct) {
+                    // 正确答案标绿
+                    btn.className = 'btn-option bg-green-200 text-green-900 border-2 border-green-500 font-bold py-4 rounded-xl text-lg w-full transition-colors shadow-sm scale-[1.02]';
+                } else if (idx === selectedIndex && selectedIndex !== q.correct) {
+                    // 选错的保持深红/加上边框
+                    btn.className = 'btn-option bg-red-600 text-white border-2 border-red-800 font-bold py-4 rounded-xl text-lg w-full opacity-90';
+                } else {
+                    // 其他无关选项降低透明度
+                    btn.classList.add('opacity-40');
+                }
+            });
+
+            if (selectedIndex === q.correct) {
+            window.playCorrectSound(); 
+            score += 20;
+            document.getElementById('score-display').innerText = score;
+            submitScore(); // 更新分数到排行榜
+            
+            // 只有答对才能驾驶
+            canDrive = true;
+            const driveBtn = document.getElementById('canvas-drive-btn');
+            driveBtn.classList.remove('opacity-50', 'pointer-events-none');
+            driveBtn.classList.add('animate-pulse'); // 提示玩家可以长按了
+        } else {
+            window.playWrongSound(); 
+            // 答错直接显示 Continue 按钮，不能驾驶
+            canDrive = false;
+            document.getElementById('continue-btn').classList.remove('hidden');
+        }
+
+        // 显示解析
+        const expContainer = document.getElementById('explanation-container');
+        expContainer.innerText = q.exp;
+        expContainer.classList.remove('hidden');
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>"']/g, m => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      })[m]);
+    // 新增：手动进入下一题逻辑
+    window.nextQuestion = function() {
+        document.getElementById('continue-btn').classList.add('hidden');
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            document.getElementById('canvas-drive-btn').classList.remove('hidden');
+            loadQuestion();
+        } else {
+            document.getElementById('question-text').innerText = "🏆 终点达成！挑战完成！";
+            document.getElementById('explanation-container').classList.add('hidden');
+            document.getElementById('q-number').innerText = questions.length;
+            
+            const optionsContainer = document.getElementById('options-container');
+            // 修复：移除 pointer-events-none 使按钮可以点击
+            optionsContainer.classList.remove('pointer-events-none');
+            optionsContainer.innerHTML = `
+                <button onclick="resetGame(true)" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Play Again</button>
+                <button onclick="goMain()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Main (主页)</button>
+            `;
+        }
     }
 
-    window.onload = () => {
-      loadLeaderboard();
-    };
-  </script>
+    window.resetGame = function(startImmediately) {
+        currentQuestionIndex = 0;
+        score = 0;
+        moveProgress = 0;
+        currentSpeed = 0;
+        document.getElementById('score-display').innerText = '0';
+        document.getElementById('canvas-timer-bar').style.width = '0%';
+        
+        if (trackCurve && carModel) {
+            updateCameraAndCar();
+            if (renderer3D) renderer3D.render(scene3D, camera3D);
+        }
+        
+        if (startImmediately) {
+            loadQuestion();
+        }
+    }
+
+    window.goMain = function() {
+        resetGame(false);
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('student-name').value = '';
+        document.getElementById('student-email').value = '';
+    }
+
+    // ==========================================
+    // 4. 驾驶交互事件 (长按)
+    const goBtn = document.getElementById('canvas-drive-btn');
+
+        function startDriveAction(e) {
+            if (e) e.preventDefault();
+            if (!canDrive) return;
+            isHoldingGo = true;
+            window.playEngineSound();
+            goBtn.classList.remove('animate-pulse');
+            goBtn.classList.add('scale-90', 'border-lime-300'); // 按下视觉反馈
+        }
+
+        function stopDriveAction(e) {
+            if (e) e.preventDefault();
+            isHoldingGo = false;
+            window.stopEngineSound();
+            goBtn.classList.remove('scale-90', 'border-lime-300');
+        }
+
+        goBtn.addEventListener('mousedown', startDriveAction);
+        goBtn.addEventListener('touchstart', startDriveAction, {passive: false});
+        
+        window.addEventListener('mouseup', stopDriveAction);
+        window.addEventListener('touchend', stopDriveAction);
+        window.addEventListener('mouseleave', stopDriveAction); // 防止移出窗口
+
+        let audioCtx;
+        let engineOsc, engineGain, engineFilter;
+
+        function initAudio() {
+            if (audioCtx) return;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+
+            // 解锁音频
+            const unlockSource = audioCtx.createBufferSource();
+            unlockSource.buffer = audioCtx.createBuffer(1, 1, 22050);
+            unlockSource.connect(audioCtx.destination);
+            unlockSource.start(0);
+
+            // 初始化引擎声音
+            engineOsc = audioCtx.createOscillator();
+            engineOsc.type = 'sawtooth';
+            engineOsc.frequency.value = 60; 
+            
+            engineFilter = audioCtx.createBiquadFilter();
+            engineFilter.type = 'lowpass';
+            engineFilter.frequency.value = 120;
+            
+            engineGain = audioCtx.createGain();
+            engineGain.gain.value = 0; // 初始静音
+            
+            engineOsc.connect(engineFilter);
+            engineFilter.connect(engineGain);
+            engineGain.connect(audioCtx.destination);
+            engineOsc.start();
+        }
+
+        window.playCorrectSound = () => {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.frequency.setValueAtTime(659.25, t); 
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.04, t + 0.05); 
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+            
+            osc.frequency.setValueAtTime(1046.50, t + 0.15); 
+            gain.gain.setValueAtTime(0, t + 0.15);
+            gain.gain.linearRampToValueAtTime(0.04, t + 0.2);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+            
+            osc.start(t);
+            osc.stop(t + 0.6);
+        };
+
+        window.playWrongSound = () => {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.frequency.setValueAtTime(200, t);
+            osc.frequency.exponentialRampToValueAtTime(100, t + 0.3);
+            
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.03, t + 0.05); 
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+            
+            osc.start(t);
+            osc.stop(t + 0.4);
+        };
+
+        window.playEngineSound = () => {
+            if (!audioCtx || !engineGain) return;
+            engineGain.gain.setTargetAtTime(0.08, audioCtx.currentTime, 0.1);
+            engineOsc.frequency.setTargetAtTime(110, audioCtx.currentTime, 0.5); // 音高提高
+            engineFilter.frequency.setTargetAtTime(400, audioCtx.currentTime, 0.5);
+        };
+
+        window.stopEngineSound = () => {
+            if (!audioCtx || !engineGain) return;
+            engineGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.2);
+            engineOsc.frequency.setTargetAtTime(60, audioCtx.currentTime, 0.3);
+            engineFilter.frequency.setTargetAtTime(120, audioCtx.currentTime, 0.3);
+        };
+
+        let scene3D, camera3D, renderer3D, carModel, trackCurve;
+        let animatedEnvironment = []; 
+
+        function init3D() {
+            const canvas = document.getElementById('game-canvas');
+            const container = document.getElementById('canvas-container');
+            
+            scene3D = new THREE.Scene();
+            scene3D.background = new THREE.Color(0x7ec8e3); 
+            scene3D.fog = new THREE.Fog(0x7ec8e3, 50, 800);
+
+            // 透视摄像机
+            camera3D = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            
+            renderer3D = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer3D.setSize(container.clientWidth, container.clientHeight);
+            renderer3D.setPixelRatio(window.devicePixelRatio);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            scene3D.add(ambient);
+            
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            dirLight.position.set(100, 200, 50);
+            scene3D.add(dirLight);
+
+            // 太阳
+            const sunGeo = new THREE.SphereGeometry(30, 32, 32);
+            const sunMat = new THREE.MeshBasicMaterial({color: 0xffe87c});
+            const sun = new THREE.Mesh(sunGeo, sunMat);
+            sun.position.set(-150, 180, -400); 
+            scene3D.add(sun);
+            animatedEnvironment.push({ obj: sun, type: 'sun' });
+
+            // 草地
+            const ground = new THREE.Mesh(
+                new THREE.PlaneGeometry(5000, 5000),
+                new THREE.MeshPhongMaterial({color: 0x66c066}) 
+            );
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.5;
+            scene3D.add(ground);
+
+            // 赛道曲线
+            const points = [];
+            let curX = 0, curZ = 0;
+            for(let i=0; i<30; i++) {
+                points.push(new THREE.Vector3(curX, 0, curZ));
+                curX += (Math.random() - 0.5) * 150; 
+                curZ -= 150;
+            }
+            trackCurve = new THREE.CatmullRomCurve3(points);
+            
+            const tubeGeo = new THREE.TubeGeometry(trackCurve, 300, 15, 8, false);
+            tubeGeo.scale(1, 0.05, 1);
+            const roadMat = new THREE.MeshPhongMaterial({color: 0x4b5563});
+            const road = new THREE.Mesh(tubeGeo, roadMat);
+            scene3D.add(road);
+
+            carModel = new THREE.Group();
+            
+            // 红色车身
+            const bodyMat = new THREE.MeshPhongMaterial({color: 0xe74c3c});
+            const body = new THREE.Mesh(new THREE.BoxGeometry(10, 3, 16), bodyMat);
+            body.position.y = 2.5;
+            carModel.add(body);
+
+            // 黑色车窗
+            const topMat = new THREE.MeshPhongMaterial({color: 0x222222});
+            const carTop = new THREE.Mesh(new THREE.BoxGeometry(8, 3, 8), topMat);
+            carTop.position.set(0, 5.5, -1);
+            carModel.add(carTop);
+
+            // 深蓝色底盘包围
+            const chassisMat = new THREE.MeshPhongMaterial({color: 0x2c3e50});
+            const chassis = new THREE.Mesh(new THREE.BoxGeometry(10.5, 1, 17), chassisMat);
+            chassis.position.y = 0.5;
+            carModel.add(chassis);
+
+            // 红色双支架尾翼
+            const spoilerMat = new THREE.MeshPhongMaterial({color: 0xe74c3c});
+            const spoilerBoard = new THREE.Mesh(new THREE.BoxGeometry(11, 1, 4), spoilerMat);
+            spoilerBoard.position.set(0, 7, 7);
+            
+            const supportMat = new THREE.MeshPhongMaterial({color: 0x2c3e50});
+            const support1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 3, 1), supportMat);
+            support1.position.set(-3, 5.5, 7);
+            const support2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 3, 1), supportMat);
+            support2.position.set(3, 5.5, 7);
+            carModel.add(spoilerBoard, support1, support2);
+
+            // 亮红色尾灯
+            const tailLightMat = new THREE.MeshBasicMaterial({color: 0xff0000});
+            const tL = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 0.5), tailLightMat);
+            tL.position.set(-3, 2.5, 8.1);
+            const tR = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 0.5), tailLightMat);
+            tR.position.set(3, 2.5, 8.1);
+            carModel.add(tL, tR);
+
+            // 车轮
+            const wheelMat = new THREE.MeshPhongMaterial({color: 0x111111});
+            const wheelGeo = new THREE.CylinderGeometry(2, 2, 1.5, 16);
+            wheelGeo.rotateZ(Math.PI / 2);
+            const positions = [[-5.5, 2, -5], [5.5, 2, -5], [-5.5, 2, 5], [5.5, 2, 5]];
+            positions.forEach(pos => {
+                const w = new THREE.Mesh(wheelGeo, wheelMat);
+                w.position.set(...pos);
+                carModel.add(w);
+            });
+
+            scene3D.add(carModel);
+
+            // 密集的周边风景
+            function spawnScenery(pos, lookTarget) {
+                const rand = Math.random();
+                let obj;
+                if (rand < 0.5) {
+                    obj = new THREE.Group();
+                    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.5, 6), new THREE.MeshPhongMaterial({color: 0x8B4513}));
+                    trunk.position.y = 3;
+                    const leaves = new THREE.Mesh(new THREE.ConeGeometry(5, 12, 6), new THREE.MeshPhongMaterial({color: 0x2e8b57}));
+                    leaves.position.y = 12;
+                    obj.add(trunk, leaves);
+                } else if (rand < 0.7) {
+                    obj = new THREE.Group();
+                    const height = 10 + Math.random() * 10;
+                    const bldg = new THREE.Mesh(new THREE.BoxGeometry(10, height, 10), new THREE.MeshPhongMaterial({color: 0xe5e7eb}));
+                    bldg.position.y = height / 2;
+                    const roof = new THREE.Mesh(new THREE.ConeGeometry(8, 8, 4), new THREE.MeshPhongMaterial({color: 0xef4444}));
+                    roof.position.y = height + 4;
+                    roof.rotation.y = Math.PI / 4;
+                    obj.add(bldg, roof);
+                } else {
+                    obj = new THREE.Mesh(new THREE.BoxGeometry(4, 5, 7), new THREE.MeshPhongMaterial({color: 0xfcd34d}));
+                    obj.position.y = 2.5;
+                }
+                obj.position.copy(pos);
+                obj.lookAt(lookTarget);
+                scene3D.add(obj);
+            }
+
+            for(let i=0.01; i<0.99; i+=0.01) {
+                const pt = trackCurve.getPointAt(i);
+                const tangent = trackCurve.getTangentAt(i);
+                const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+                
+                const pos1 = pt.clone().add(normal.clone().multiplyScalar(15 + Math.random() * 15));
+                spawnScenery(pos1, pt);
+                const pos2 = pt.clone().add(normal.clone().multiplyScalar(-15 - Math.random() * 15));
+                spawnScenery(pos2, pt);
+            }
+
+            updateCameraAndCar();
+            renderer3D.render(scene3D, camera3D);
+            lastTime = performance.now();
+            requestAnimationFrame(animate3D);
+        }
+
+        function updateCameraAndCar() {
+            if(!trackCurve || !carModel) return;
+            
+            const pt = trackCurve.getPointAt(moveProgress);
+            const tangent = trackCurve.getTangentAt(moveProgress);
+            
+            carModel.position.copy(pt);
+            const lookAtPt = pt.clone().add(tangent);
+            carModel.lookAt(lookAtPt);
+
+            // 正后方跟随视角
+            const camOffset = tangent.clone().multiplyScalar(-30);
+            camOffset.y = 12; 
+            camera3D.position.copy(pt).add(camOffset);
+            camera3D.lookAt(pt.clone().add(new THREE.Vector3(0, 5, 0))); 
+
+            // 让太阳始终在前方
+            animatedEnvironment.forEach(item => {
+                if(item.type === 'sun') {
+                    item.obj.position.copy(pt).add(tangent.clone().multiplyScalar(400));
+                    item.obj.position.y = 180;
+                }
+            });
+        }
+
+        function animate3D(time) {
+            requestAnimationFrame(animate3D);
+            
+            // 计算时间增量
+            const dt = time - lastTime;
+            lastTime = time;
+
+            if (canDrive && isHoldingGo && driveTimeAccumulated < TOTAL_DRIVE_TIME_NEEDED) {
+                // 车正在加速/行驶
+                driveTimeAccumulated += dt;
+                
+                // 确保不超过 5 秒上限
+                if (driveTimeAccumulated > TOTAL_DRIVE_TIME_NEEDED) {
+                    driveTimeAccumulated = TOTAL_DRIVE_TIME_NEEDED;
+                }
+
+                // 进度累加 = (当前 dt / 5000ms) * 本题应走的路程比例
+                const progressRatio = dt / TOTAL_DRIVE_TIME_NEEDED;
+                moveProgress += progressRatio * PROGRESS_PER_QUESTION;
+                
+                if (moveProgress > 1) moveProgress = 1;
+                
+                updateCameraAndCar();
+
+                // 速度表加速
+                currentSpeed = Math.min(currentSpeed + dt * 0.1, 108); // 最高速模拟 108km/h
+
+            } else {
+                // 没按住，或者本题驾驶结束，速度表减速回落
+                currentSpeed = Math.max(currentSpeed - dt * 0.15, 0);
+
+                // 检查是否开完了 5 秒
+            if (canDrive && driveTimeAccumulated >= TOTAL_DRIVE_TIME_NEEDED) {
+                canDrive = false;
+                isHoldingGo = false;
+                window.stopEngineSound();
+                
+                document.getElementById('canvas-drive-btn').classList.add('hidden');
+                
+                // 驾驶完成后显示 Continue 按钮，等待用户手动点击进入下一题
+                document.getElementById('continue-btn').classList.remove('hidden');
+            }
+        }
+
+        // 更新仪表盘UI
+        document.getElementById('speed-text').innerText = Math.floor(currentSpeed);
+            document.getElementById('speed-bar').style.height = `${(currentSpeed / 120) * 100}%`;
+            
+            // 更新顶部总体进度条
+            document.getElementById('canvas-timer-bar').style.width = `${moveProgress * 100}%`;
+
+            renderer3D.render(scene3D, camera3D);
+        }
+
+        window.addEventListener('resize', () => {
+            if (!camera3D || !renderer3D) return;
+            const container = document.getElementById('canvas-container');
+            if (container.clientWidth === 0) return; // 隐藏状态下不处理
+            camera3D.aspect = container.clientWidth / container.clientHeight;
+            camera3D.updateProjectionMatrix();
+            renderer3D.setSize(container.clientWidth, container.clientHeight);
+            renderer3D.render(scene3D, camera3D);
+        });
+
+        // 初始启动
+        window.onload = () => {
+            initFirebaseAndAuth(); // 初始化 Firebase，提前监听排行榜
+            init3D();
+        };
+
+    </script>
 </body>
 </html>
