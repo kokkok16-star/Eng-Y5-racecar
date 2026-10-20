@@ -16,19 +16,34 @@
         .btn-option:active:not(:disabled) { transform: scale(0.95); }
         
         #speed-bar { transition: height 0.1s linear, background-color 0.1s linear; }
+
+        /* 撞击金币时，按钮的震动动画 */
+        @keyframes shakeBtn {
+            0%, 100% { transform: scale(0.9) translateX(0); }
+            25% { transform: scale(0.9) translateX(-8px) rotate(-3deg); }
+            50% { transform: scale(0.9) translateX(8px) rotate(3deg); }
+            75% { transform: scale(0.9) translateX(-8px) rotate(-3deg); }
+        }
+        .btn-shake { animation: shakeBtn 0.2s ease-in-out; }
+
+        /* 光环闪烁特效 */
+        @keyframes ringGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.9)); }
+            50% { filter: drop-shadow(0 0 20px rgba(255, 235, 100, 1)); }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
 
-    <!-- 登录界面 -->
-    <div id="login-screen" class="min-h-screen w-full bg-gradient-to-br from-yellow-400 via-lime-500 to-emerald-700 flex items-center justify-center p-4">
+    <!-- 登录界面 (修改为浅蓝色主题) -->
+    <div id="login-screen" class="min-h-screen w-full bg-gradient-to-br from-sky-100 via-blue-200 to-blue-400 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl p-6 md:p-10 relative">
             <button onclick="showTeacherLogin()" class="absolute top-4 right-4 md:top-6 md:right-6 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm py-1.5 px-4 rounded-full flex items-center gap-2 transition-colors">
                 🔒 教师专区
             </button>
 
             <div class="text-center mb-8 mt-4 md:mt-0">
-                <h1 class="text-3xl md:text-4xl font-extrabold text-lime-700 mb-2">English Racing Game</h1>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-blue-700 mb-2">English Racing Game</h1>
                 <p class="text-gray-500 text-sm md:text-base">英语语法趣味赛车挑战系统</p>
             </div>
 
@@ -37,13 +52,13 @@
                 <div class="flex-1 flex flex-col gap-5">
                     <div>
                         <label class="block text-gray-700 font-bold mb-2 text-sm">学生姓名 (中文 / 英文):</label>
-                        <input type="text" id="student-name" placeholder="例如: 张小明 / Tan Ah Kow" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent">
+                        <input type="text" id="student-name" placeholder="例如: 张小明 / Tan Ah Kow" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-2 text-sm">教育部邮箱 (Email):</label>
-                        <input type="email" id="student-email" placeholder="例如: m-1234567@moe-dl.edu.my" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent">
+                        <input type="email" id="student-email" placeholder="例如: m-1234567@moe-dl.edu.my" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
-                    <button onclick="startGame()" class="w-full bg-lime-600 hover:bg-lime-700 text-white font-bold py-4 rounded-lg text-lg shadow-lg transition-transform active:scale-95 mt-2 flex justify-center items-center gap-2">
+                    <button onclick="startGame()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg text-lg shadow-lg transition-transform active:scale-95 mt-2 flex justify-center items-center gap-2">
                         开始答题 🚀
                     </button>
                 </div>
@@ -66,6 +81,12 @@
         <div id="canvas-container" class="relative bg-blue-200 select-none">
             <canvas id="game-canvas" class="w-full h-full block"></canvas>
             
+            <!-- 移到画面左上角的总分显示 -->
+            <div class="absolute top-4 left-4 bg-gray-900/80 rounded-full border-2 border-yellow-500 px-3 py-1.5 md:px-4 md:py-2 z-20 shadow-lg flex items-center gap-2">
+                <span class="text-white font-bold text-xs md:text-sm">⭐ Score:</span>
+                <span id="score-display" class="text-yellow-400 font-bold text-sm md:text-base">0</span>
+            </div>
+
             <div id="speedometer" class="absolute left-4 bottom-4 w-12 h-36 md:w-16 md:h-48 bg-gray-900/80 rounded-full border-4 border-gray-700 flex flex-col items-center justify-end p-1 z-20 shadow-lg">
                 <div class="w-full h-full relative rounded-full overflow-hidden flex flex-col justify-end bg-gray-800">
                     <div id="speed-bar" class="w-full bg-gradient-to-t from-green-400 via-yellow-400 to-red-500 rounded-full" style="height: 0%;"></div>
@@ -75,7 +96,15 @@
             </div>
             
             <div id="canvas-timer-bar-container" class="absolute top-0 left-0 w-full h-2 bg-gray-200/50 z-20">
-                <div id="canvas-timer-bar" class="bg-lime-500 h-full w-0 transition-all duration-100" style="width: 0%;"></div>
+                <div id="canvas-timer-bar" class="bg-blue-500 h-full w-0 transition-all duration-100" style="width: 0%;"></div>
+            </div>
+            
+            <!-- 右上角总进度提示 -->
+            <div class="absolute top-4 right-4 z-20 flex flex-col items-end gap-1.5">
+                <div class="bg-gray-900/80 rounded-full border-2 border-gray-700 px-3 py-1.5 md:px-4 md:py-2 shadow-lg flex items-center gap-2">
+                    <span class="text-white font-bold text-xs md:text-sm">🏁 距离终点:</span>
+                    <span id="overall-progress-text" class="text-lime-400 font-bold text-sm md:text-base">0%</span>
+                </div>
             </div>
             
             <button id="canvas-drive-btn" class="absolute bottom-4 right-4 bg-lime-600 hover:bg-lime-700 active:bg-lime-800 text-white font-bold w-16 h-16 rounded-full shadow-[0_5px_15px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center z-20 border-4 border-white opacity-50 pointer-events-none select-none touch-none hidden">
@@ -85,11 +114,8 @@
         </div>
 
         <div id="ui-container" class="bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-10 p-4 flex flex-col">
-            <div class="flex justify-between items-center mb-2 px-2">
-                <div class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full font-bold text-sm">
-                    Score: <span id="score-display">0</span>
-                </div>
-                <div class="bg-lime-100 text-lime-800 px-4 py-1 rounded-full font-bold text-sm">
+            <div class="flex justify-end items-center mb-2 px-2">
+                <div class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm">
                     Question <span id="q-number">1</span>/<span id="q-total">20</span>
                 </div>
             </div>
@@ -112,29 +138,41 @@
             <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-2">提示</h3>
             <p id="modal-msg" class="text-gray-600 mb-6"></p>
             <div id="password-area" class="hidden mb-6">
-                <input type="password" id="teacher-pwd" placeholder="请输入密码" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500">
+                <input type="password" id="teacher-pwd" placeholder="请输入密码" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="flex justify-center gap-3">
                 <button id="modal-cancel-btn" onclick="closeModal()" class="hidden bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">取消</button>
-                <button id="modal-ok-btn" onclick="closeModal()" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-6 rounded-lg">确定</button>
+                <button id="modal-ok-btn" onclick="closeModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">确定</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'english-racing-default-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        // 请将此处替换为您的 Firebase 配置 (之前已替换)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJFJq12eGnQO9UiyFuwK5V2qvRvv_NfuU",
+            authDomain: "eng-y5-racecar.firebaseapp.com",
+            databaseURL: "https://eng-y5-racecar-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "eng-y5-racecar",
+            storageBucket: "eng-y5-racecar.firebasestorage.app",
+            messagingSenderId: "628715478919",
+            appId: "1:628715478919:web:100ed05292df9983c3fd22",
+            measurementId: "G-BP6HPTZ9W7"
+        };
+
         let app, auth, db;
         
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-        } catch (e) {}
+        } catch (e) {
+            console.error("Firebase 初始化失败:", e);
+        }
 
         const questions = [
             { q: "I _____ a great movie last night.", options: ["see", "saw", "seen", "seeing"], correct: 1, exp: "解析：句末的 last night 表明动作发生在过去，因此需要使用动词的过去式 saw。" },
@@ -168,7 +206,9 @@
         let canDrive = false;
         let isHoldingGo = false;
         let driveTimeAccumulated = 0;
-        const TOTAL_DRIVE_TIME_NEEDED = 5000;
+        
+        const TOTAL_DRIVE_TIME_NEEDED = 6000; // 6秒长冲刺
+        
         let moveProgress = 0; 
         const PROGRESS_PER_QUESTION = 1 / questions.length; 
         
@@ -179,20 +219,17 @@
         async function initFirebaseAndAuth() {
             if (!auth) return;
             try {
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                
-                const lbRef = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
+                await signInAnonymously(auth);
+                const lbRef = collection(db, 'leaderboard');
                 onSnapshot(lbRef, (snapshot) => {
                     let records = [];
                     snapshot.forEach(doc => records.push(doc.data()));
                     records.sort((a, b) => b.score - a.score);
                     renderLeaderboard(records);
                 });
-            } catch (e) {}
+            } catch (e) {
+                console.error("Firebase Auth 失败:", e);
+            }
         }
 
         function renderLeaderboard(records) {
@@ -220,10 +257,14 @@
         async function submitScore() {
             if (!auth || !auth.currentUser || !playerName) return;
             try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', auth.currentUser.uid);
+                const docRef = doc(db, 'leaderboard', auth.currentUser.uid);
                 await setDoc(docRef, { name: playerName, score: score, timestamp: Date.now() });
-            } catch (e) {}
+            } catch (e) {
+                console.error("提交分数失败:", e);
+            }
         }
+
+        let pendingModalConfirm = null;
 
         window.showMessage = function(title, msg, type = 'alert', onConfirm = null) {
             document.getElementById('message-modal').classList.remove('hidden');
@@ -232,33 +273,31 @@
             
             const pwdArea = document.getElementById('password-area');
             const cancelBtn = document.getElementById('modal-cancel-btn');
-            const okBtn = document.getElementById('modal-ok-btn');
             
             pwdArea.classList.add('hidden');
             document.getElementById('teacher-pwd').value = '';
             cancelBtn.classList.add('hidden');
-            
-            okBtn.onclick = () => {
-                if (onConfirm) onConfirm();
-                else window.closeModal();
-            };
+            pendingModalConfirm = onConfirm;
 
             if (type === 'prompt') {
                 pwdArea.classList.remove('hidden');
                 cancelBtn.classList.remove('hidden');
-                cancelBtn.onclick = window.closeModal;
             }
         }
 
         window.closeModal = function() {
             document.getElementById('message-modal').classList.add('hidden');
+            if (typeof pendingModalConfirm === 'function') {
+                const action = pendingModalConfirm;
+                pendingModalConfirm = null;
+                action();
+            }
         }
 
         window.showTeacherLogin = function() {
             window.showMessage("教师专区", "请输入教师管理密码：", "prompt", () => {
                 const pwd = document.getElementById('teacher-pwd').value;
                 if (pwd === '2020Hui%%') {
-                    window.closeModal();
                     window.showMessage("登录成功", "欢迎进入教师后台！(演示功能)");
                 } else {
                     window.showMessage("错误", "密码错误，请重试！");
@@ -374,6 +413,7 @@
                 loadQuestion();
             } else {
                 document.getElementById('question-text').innerText = "🏆 终点达成！挑战完成！";
+                document.getElementById('overall-progress-text').innerText = "100%";
                 document.getElementById('explanation-container').classList.add('hidden');
                 document.getElementById('q-number').innerText = questions.length;
                 document.getElementById('canvas-drive-btn').classList.add('hidden');
@@ -381,8 +421,8 @@
                 const optionsContainer = document.getElementById('options-container');
                 optionsContainer.classList.remove('pointer-events-none');
                 optionsContainer.innerHTML = `
-                    <button onclick="resetGame(true)" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Play Again</button>
-                    <button onclick="goMain()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Main (主页)</button>
+                    <button onclick="resetGame(true)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Play Again</button>
+                    <button onclick="goMain()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Main (主页)</button>
                 `;
             }
         }
@@ -394,6 +434,16 @@
             currentSpeed = 0;
             document.getElementById('score-display').innerText = '0';
             document.getElementById('canvas-timer-bar').style.width = '0%';
+            document.getElementById('overall-progress-text').innerText = '0%';
+            
+            if (typeof coins !== 'undefined') {
+                coins.forEach(coinData => {
+                    if (!coinData.active) {
+                        scene3D.add(coinData.mesh);
+                        coinData.active = true;
+                    }
+                });
+            }
             
             if (trackCurve && carModel) {
                 updateCameraAndCar();
@@ -413,13 +463,9 @@
             document.getElementById('student-email').value = '';
         }
 
-        // ==================
-        // 关键修复区域在这里
-        // ==================
         const goBtn = document.getElementById('canvas-drive-btn');
 
         function startDriveAction(e) {
-            // 只有按在按钮上时，才阻止默认行为（防缩放）
             if (e && e.cancelable) e.preventDefault(); 
             if (!canDrive) return;
             isHoldingGo = true;
@@ -429,8 +475,6 @@
         }
 
         function stopDriveAction(e) {
-            // ⚠️ 极其重要修复：这里绝对不能写 e.preventDefault()
-            // 因为它绑定在 window 全局上！如果写了，会导致所有文本框无法点击聚焦！
             isHoldingGo = false;
             if (window.stopEngineSound) window.stopEngineSound();
             if (goBtn) goBtn.classList.remove('scale-90', 'border-lime-300');
@@ -441,7 +485,6 @@
         
         window.addEventListener('mouseup', stopDriveAction);
         window.addEventListener('touchend', stopDriveAction);
-        // ==================
 
         let audioCtx;
         let engineOsc, engineGain, engineFilter;
@@ -530,8 +573,28 @@
             engineFilter.frequency.setTargetAtTime(120, audioCtx.currentTime, 0.3);
         };
 
+        window.playCoinSound = () => {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.frequency.setValueAtTime(987.77, t); 
+            osc.frequency.setValueAtTime(1318.51, t + 0.1); 
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.1, t + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+            
+            osc.start(t);
+            osc.stop(t + 0.4);
+        };
+
         let scene3D, camera3D, renderer3D, carModel, trackCurve;
         let animatedEnvironment = []; 
+        let coins = []; 
 
         function init3D() {
             const canvas = document.getElementById('game-canvas');
@@ -539,9 +602,9 @@
             
             scene3D = new THREE.Scene();
             scene3D.background = new THREE.Color(0x7ec8e3); 
-            scene3D.fog = new THREE.Fog(0x7ec8e3, 50, 800);
+            scene3D.fog = new THREE.Fog(0x7ec8e3, 100, 4000);
 
-            camera3D = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera3D = new THREE.PerspectiveCamera(85, container.clientWidth / container.clientHeight, 0.1, 5000);
             
             renderer3D = new THREE.WebGLRenderer({ canvas, antialias: true });
             renderer3D.setSize(container.clientWidth, container.clientHeight);
@@ -554,15 +617,15 @@
             dirLight.position.set(100, 200, 50);
             scene3D.add(dirLight);
 
-            const sunGeo = new THREE.SphereGeometry(30, 32, 32);
+            const sunGeo = new THREE.SphereGeometry(60, 32, 32);
             const sunMat = new THREE.MeshBasicMaterial({color: 0xffe87c});
             const sun = new THREE.Mesh(sunGeo, sunMat);
-            sun.position.set(-150, 180, -400); 
+            sun.position.set(-500, 400, -1000); 
             scene3D.add(sun);
             animatedEnvironment.push({ obj: sun, type: 'sun' });
 
             const ground = new THREE.Mesh(
-                new THREE.PlaneGeometry(5000, 5000),
+                new THREE.PlaneGeometry(30000, 30000), 
                 new THREE.MeshPhongMaterial({color: 0x66c066}) 
             );
             ground.rotation.x = -Math.PI / 2;
@@ -571,14 +634,16 @@
 
             const points = [];
             let curX = 0, curZ = 0;
-            for(let i=0; i<30; i++) {
+            // 增加跑道长度和弯度，提升速度感
+            for(let i=0; i<60; i++) {
                 points.push(new THREE.Vector3(curX, 0, curZ));
-                curX += (Math.random() - 0.5) * 150; 
-                curZ -= 150;
+                let curveAmount = Math.sin(i * 0.5) * 1500 + (Math.random() - 0.5) * 800;
+                curX += curveAmount; 
+                curZ -= 2000; 
             }
             trackCurve = new THREE.CatmullRomCurve3(points);
             
-            const tubeGeo = new THREE.TubeGeometry(trackCurve, 300, 15, 8, false);
+            const tubeGeo = new THREE.TubeGeometry(trackCurve, 1500, 15, 8, false);
             tubeGeo.scale(1, 0.05, 1);
             const roadMat = new THREE.MeshPhongMaterial({color: 0x4b5563});
             const road = new THREE.Mesh(tubeGeo, roadMat);
@@ -636,38 +701,63 @@
                 let obj;
                 if (rand < 0.5) {
                     obj = new THREE.Group();
-                    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.5, 6), new THREE.MeshPhongMaterial({color: 0x8B4513}));
-                    trunk.position.y = 3;
-                    const leaves = new THREE.Mesh(new THREE.ConeGeometry(5, 12, 6), new THREE.MeshPhongMaterial({color: 0x2e8b57}));
-                    leaves.position.y = 12;
+                    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 2, 8), new THREE.MeshPhongMaterial({color: 0x8B4513}));
+                    trunk.position.y = 4;
+                    const leaves = new THREE.Mesh(new THREE.ConeGeometry(7, 18, 6), new THREE.MeshPhongMaterial({color: 0x2e8b57}));
+                    leaves.position.y = 16;
                     obj.add(trunk, leaves);
                 } else if (rand < 0.7) {
                     obj = new THREE.Group();
-                    const height = 10 + Math.random() * 10;
-                    const bldg = new THREE.Mesh(new THREE.BoxGeometry(10, height, 10), new THREE.MeshPhongMaterial({color: 0xe5e7eb}));
+                    const height = 15 + Math.random() * 20;
+                    const bldg = new THREE.Mesh(new THREE.BoxGeometry(15, height, 15), new THREE.MeshPhongMaterial({color: 0xe5e7eb}));
                     bldg.position.y = height / 2;
-                    const roof = new THREE.Mesh(new THREE.ConeGeometry(8, 8, 4), new THREE.MeshPhongMaterial({color: 0xef4444}));
-                    roof.position.y = height + 4;
+                    const roof = new THREE.Mesh(new THREE.ConeGeometry(12, 12, 4), new THREE.MeshPhongMaterial({color: 0xef4444}));
+                    roof.position.y = height + 6;
                     roof.rotation.y = Math.PI / 4;
                     obj.add(bldg, roof);
                 } else {
-                    obj = new THREE.Mesh(new THREE.BoxGeometry(4, 5, 7), new THREE.MeshPhongMaterial({color: 0xfcd34d}));
-                    obj.position.y = 2.5;
+                    obj = new THREE.Mesh(new THREE.BoxGeometry(6, 7, 10), new THREE.MeshPhongMaterial({color: 0xfcd34d}));
+                    obj.position.y = 3.5;
                 }
                 obj.position.copy(pos);
                 obj.lookAt(lookTarget);
                 scene3D.add(obj);
             }
 
-            for(let i=0.01; i<0.99; i+=0.01) {
+            for(let i=0.003; i<0.99; i+=0.002) {
                 const pt = trackCurve.getPointAt(i);
                 const tangent = trackCurve.getTangentAt(i);
                 const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
                 
-                const pos1 = pt.clone().add(normal.clone().multiplyScalar(15 + Math.random() * 15));
+                const pos1 = pt.clone().add(normal.clone().multiplyScalar(30 + Math.random() * 30));
                 spawnScenery(pos1, pt);
-                const pos2 = pt.clone().add(normal.clone().multiplyScalar(-15 - Math.random() * 15));
+                const pos2 = pt.clone().add(normal.clone().multiplyScalar(-30 - Math.random() * 30));
                 spawnScenery(pos2, pt);
+            }
+
+            // 巨大且清晰的金色光环 (金币)
+            coins = [];
+            const coinGeo = new THREE.TorusGeometry(18, 3, 16, 32); 
+            const coinMat = new THREE.MeshStandardMaterial({
+                color: 0xffd700, 
+                emissive: 0xffaa00, 
+                emissiveIntensity: 0.8,
+                metalness: 1,
+                roughness: 0.1
+            });
+            
+            for(let i=0.01; i<0.99; i+=0.015) { 
+                const pt = trackCurve.getPointAt(i);
+                const tangent = trackCurve.getTangentAt(i);
+                
+                const coin = new THREE.Mesh(coinGeo, coinMat);
+                coin.position.copy(pt);
+                coin.position.y += 10; // 调高防止穿模
+                // 让光环正对着赛道方向，像拱门一样
+                coin.lookAt(pt.clone().add(tangent)); 
+
+                scene3D.add(coin);
+                coins.push({ mesh: coin, active: true, progress: i });
             }
 
             updateCameraAndCar();
@@ -686,15 +776,15 @@
             const lookAtPt = pt.clone().add(tangent);
             carModel.lookAt(lookAtPt);
 
-            const camOffset = tangent.clone().multiplyScalar(-30);
-            camOffset.y = 12; 
+            const camOffset = tangent.clone().multiplyScalar(-35);
+            camOffset.y = 15; 
             camera3D.position.copy(pt).add(camOffset);
             camera3D.lookAt(pt.clone().add(new THREE.Vector3(0, 5, 0))); 
 
             animatedEnvironment.forEach(item => {
                 if(item.type === 'sun') {
-                    item.obj.position.copy(pt).add(tangent.clone().multiplyScalar(400));
-                    item.obj.position.y = 180;
+                    item.obj.position.copy(pt).add(tangent.clone().multiplyScalar(2000));
+                    item.obj.position.y = 500;
                 }
             });
         }
@@ -719,10 +809,48 @@
                 
                 updateCameraAndCar();
 
-                currentSpeed = Math.min(currentSpeed + dt * 0.1, 108); 
+                currentSpeed = Math.min(currentSpeed + dt * 0.5, 250); 
+                
+                // 检测车子是否穿过金币光环
+                coins.forEach(coinData => {
+                    if (coinData.active && Math.abs(coinData.progress - moveProgress) < 0.004) {
+                        coinData.active = false;
+                        scene3D.remove(coinData.mesh); 
+                        score += 1; 
+                        document.getElementById('score-display').innerText = score;
+                        submitScore(); 
+                        window.playCoinSound(); 
+                        
+                        // 按钮震动特效
+                        const driveBtn = document.getElementById('canvas-drive-btn');
+                        driveBtn.classList.remove('btn-shake');
+                        void driveBtn.offsetWidth; 
+                        driveBtn.classList.add('btn-shake');
+                        
+                        // 飘浮加分特效
+                        const canvasContainer = document.getElementById('canvas-container');
+                        const plusOneText = document.createElement('div');
+                        plusOneText.innerText = '+ 1';
+                        plusOneText.className = 'absolute text-6xl md:text-8xl font-black text-yellow-300 drop-shadow-[0_0_20px_rgba(255,215,0,1)] z-50 pointer-events-none transition-all duration-1000 ease-out italic tracking-wider';
+                        plusOneText.style.left = '50%';
+                        plusOneText.style.top = '50%';
+                        plusOneText.style.transform = 'translate(-50%, -50%)';
+                        canvasContainer.appendChild(plusOneText);
+                        
+                        void plusOneText.offsetWidth;
+                        
+                        plusOneText.style.top = '15%';
+                        plusOneText.style.opacity = '0';
+                        plusOneText.style.transform = 'translate(-50%, -50%) scale(1.8)';
+                        
+                        setTimeout(() => {
+                            if (plusOneText.parentNode) plusOneText.parentNode.removeChild(plusOneText);
+                        }, 1000);
+                    }
+                });
 
             } else {
-                currentSpeed = Math.max(currentSpeed - dt * 0.15, 0);
+                currentSpeed = Math.max(currentSpeed - dt * 0.2, 0);
 
                 if (canDrive && driveTimeAccumulated >= TOTAL_DRIVE_TIME_NEEDED) {
                     canDrive = false;
@@ -735,8 +863,19 @@
             }
 
             document.getElementById('speed-text').innerText = Math.floor(currentSpeed);
-            document.getElementById('speed-bar').style.height = `${(currentSpeed / 120) * 100}%`;
+            document.getElementById('speed-bar').style.height = `${(currentSpeed / 250) * 100}%`;
             document.getElementById('canvas-timer-bar').style.width = `${moveProgress * 100}%`;
+            
+            // 更新右上角的总进度百分比
+            const progressPercent = Math.min(100, Math.floor(moveProgress * 100));
+            document.getElementById('overall-progress-text').innerText = progressPercent + '%';
+
+            // 让路上的光环稍微自转增加动感
+            coins.forEach(coinData => {
+                if (coinData.active) {
+                    coinData.mesh.rotation.z += 0.05;
+                }
+            });
 
             renderer3D.render(scene3D, camera3D);
         }
