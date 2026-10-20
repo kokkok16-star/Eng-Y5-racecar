@@ -2,12 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Updated viewport meta to match index-2 and prevent mobile focus/cursor issues -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>English Racing Game</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
+        /* Removed overflow: hidden from body to fix iOS Safari missing cursor bug */
+        body { margin: 0; font-family: 'Inter', sans-serif; }
         #canvas-container { width: 100%; height: 50vh; display: block; touch-action: none; }
         #ui-container { width: 100%; height: 50vh; display: flex; flex-direction: column; }
         .btn-option { transition: all 0.1s ease; }
@@ -18,7 +21,8 @@
         #speed-bar { transition: height 0.1s linear, background-color 0.1s linear; }
     </style>
 </head>
-<body class="bg-gray-50 flex flex-col h-screen w-screen overflow-hidden">
+<!-- Removed overflow-hidden from body class to ensure inputs behave correctly on mobile -->
+<body class="bg-gray-50 flex flex-col h-screen w-screen">
 
     <!-- 登录界面 -->
     <div id="login-screen" class="absolute inset-0 bg-gradient-to-br from-yellow-400 via-lime-500 to-emerald-700 z-50 overflow-y-auto flex items-center justify-center p-4">
@@ -39,11 +43,12 @@
                 <div class="flex-1 flex flex-col gap-5">
                     <div>
                         <label class="block text-gray-700 font-bold mb-2 text-sm">学生姓名 (中文 / 英文):</label>
-                        <input type="text" id="student-name" placeholder="例如: 张小明 / Tan Ah Kow" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent">
+                        <!-- Added explicit user-select styles to ensure cursor appears on all mobile browsers -->
+                        <input type="text" id="student-name" placeholder="例如: 张小明 / Tan Ah Kow" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent" style="-webkit-user-select: text; user-select: text;">
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-2 text-sm">教育部邮箱 (Email):</label>
-                        <input type="email" id="student-email" placeholder="例如: m-1234567@moe-dl.edu.my" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent">
+                        <input type="email" id="student-email" placeholder="例如: m-1234567@moe-dl.edu.my" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent" style="-webkit-user-select: text; user-select: text;">
                     </div>
                     <button onclick="startGame()" class="w-full bg-lime-600 hover:bg-lime-700 text-white font-bold py-4 rounded-lg text-lg shadow-lg transition-transform active:scale-95 mt-2 flex justify-center items-center gap-2">
                         开始答题 🚀
@@ -63,8 +68,8 @@
         </div>
     </div>
 
-    <!-- 游戏主界面 (初始隐藏) -->
-    <div id="game-screen" class="hidden flex flex-col h-full w-full">
+    <!-- 游戏主界面 (初始隐藏) - Added overflow-hidden here to contain the game view -->
+    <div id="game-screen" class="hidden flex flex-col h-full w-full overflow-hidden">
         <!-- 上半部分：3D 游戏画面 -->
         <div id="canvas-container" class="relative bg-blue-200 select-none">
             <canvas id="game-canvas" class="w-full h-full block"></canvas>
@@ -133,7 +138,7 @@
             <p id="modal-msg" class="text-gray-600 mb-6">这里是消息内容。</p>
             <!-- 密码输入区域 (仅教师专区显示) -->
             <div id="password-area" class="hidden mb-6">
-                <input type="password" id="teacher-pwd" placeholder="请输入密码" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500">
+                <input type="password" id="teacher-pwd" placeholder="请输入密码" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500" style="-webkit-user-select: text; user-select: text;">
             </div>
             <div class="flex justify-center gap-3">
                 <button id="modal-cancel-btn" onclick="closeModal()" class="hidden bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">取消</button>
@@ -350,13 +355,13 @@
             
             // 重置 UI
             document.getElementById('options-container').classList.remove('pointer-events-none');
-        document.getElementById('explanation-container').classList.add('hidden');
-        document.getElementById('canvas-drive-btn').classList.add('opacity-50', 'pointer-events-none');
-        document.getElementById('canvas-drive-btn').classList.remove('animate-pulse');
-        document.getElementById('continue-btn').classList.add('hidden');
+            document.getElementById('explanation-container').classList.add('hidden');
+            document.getElementById('canvas-drive-btn').classList.add('opacity-50', 'pointer-events-none');
+            document.getElementById('canvas-drive-btn').classList.remove('animate-pulse');
+            document.getElementById('continue-btn').classList.add('hidden');
         
-        const container = document.getElementById('options-container');
-        container.innerHTML = '';
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
             
             q.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
@@ -393,80 +398,80 @@
             });
 
             if (selectedIndex === q.correct) {
-            window.playCorrectSound(); 
-            score += 20;
-            document.getElementById('score-display').innerText = score;
-            submitScore(); // 更新分数到排行榜
+                window.playCorrectSound(); 
+                score += 20;
+                document.getElementById('score-display').innerText = score;
+                submitScore(); // 更新分数到排行榜
+                
+                // 只有答对才能驾驶
+                canDrive = true;
+                const driveBtn = document.getElementById('canvas-drive-btn');
+                driveBtn.classList.remove('opacity-50', 'pointer-events-none');
+                driveBtn.classList.add('animate-pulse'); // 提示玩家可以长按了
+            } else {
+                window.playWrongSound(); 
+                // 答错直接显示 Continue 按钮，不能驾驶
+                canDrive = false;
+                document.getElementById('continue-btn').classList.remove('hidden');
+            }
+
+            // 显示解析
+            const expContainer = document.getElementById('explanation-container');
+            expContainer.innerText = q.exp;
+            expContainer.classList.remove('hidden');
+        }
+
+        // 新增：手动进入下一题逻辑
+        window.nextQuestion = function() {
+            document.getElementById('continue-btn').classList.add('hidden');
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                document.getElementById('canvas-drive-btn').classList.remove('hidden');
+                loadQuestion();
+            } else {
+                document.getElementById('question-text').innerText = "🏆 终点达成！挑战完成！";
+                document.getElementById('explanation-container').classList.add('hidden');
+                document.getElementById('q-number').innerText = questions.length;
+                
+                const optionsContainer = document.getElementById('options-container');
+                // 修复：移除 pointer-events-none 使按钮可以点击
+                optionsContainer.classList.remove('pointer-events-none');
+                optionsContainer.innerHTML = `
+                    <button onclick="resetGame(true)" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Play Again</button>
+                    <button onclick="goMain()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Main (主页)</button>
+                `;
+            }
+        }
+
+        window.resetGame = function(startImmediately) {
+            currentQuestionIndex = 0;
+            score = 0;
+            moveProgress = 0;
+            currentSpeed = 0;
+            document.getElementById('score-display').innerText = '0';
+            document.getElementById('canvas-timer-bar').style.width = '0%';
             
-            // 只有答对才能驾驶
-            canDrive = true;
-            const driveBtn = document.getElementById('canvas-drive-btn');
-            driveBtn.classList.remove('opacity-50', 'pointer-events-none');
-            driveBtn.classList.add('animate-pulse'); // 提示玩家可以长按了
-        } else {
-            window.playWrongSound(); 
-            // 答错直接显示 Continue 按钮，不能驾驶
-            canDrive = false;
-            document.getElementById('continue-btn').classList.remove('hidden');
-        }
-
-        // 显示解析
-        const expContainer = document.getElementById('explanation-container');
-        expContainer.innerText = q.exp;
-        expContainer.classList.remove('hidden');
-    }
-
-    // 新增：手动进入下一题逻辑
-    window.nextQuestion = function() {
-        document.getElementById('continue-btn').classList.add('hidden');
-        currentQuestionIndex++;
-        if (currentQuestionIndex < questions.length) {
-            document.getElementById('canvas-drive-btn').classList.remove('hidden');
-            loadQuestion();
-        } else {
-            document.getElementById('question-text').innerText = "🏆 终点达成！挑战完成！";
-            document.getElementById('explanation-container').classList.add('hidden');
-            document.getElementById('q-number').innerText = questions.length;
+            if (trackCurve && carModel) {
+                updateCameraAndCar();
+                if (renderer3D) renderer3D.render(scene3D, camera3D);
+            }
             
-            const optionsContainer = document.getElementById('options-container');
-            // 修复：移除 pointer-events-none 使按钮可以点击
-            optionsContainer.classList.remove('pointer-events-none');
-            optionsContainer.innerHTML = `
-                <button onclick="resetGame(true)" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Play Again</button>
-                <button onclick="goMain()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Main (主页)</button>
-            `;
+            if (startImmediately) {
+                loadQuestion();
+            }
         }
-    }
 
-    window.resetGame = function(startImmediately) {
-        currentQuestionIndex = 0;
-        score = 0;
-        moveProgress = 0;
-        currentSpeed = 0;
-        document.getElementById('score-display').innerText = '0';
-        document.getElementById('canvas-timer-bar').style.width = '0%';
-        
-        if (trackCurve && carModel) {
-            updateCameraAndCar();
-            if (renderer3D) renderer3D.render(scene3D, camera3D);
+        window.goMain = function() {
+            resetGame(false);
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('student-name').value = '';
+            document.getElementById('student-email').value = '';
         }
-        
-        if (startImmediately) {
-            loadQuestion();
-        }
-    }
 
-    window.goMain = function() {
-        resetGame(false);
-        document.getElementById('game-screen').classList.add('hidden');
-        document.getElementById('login-screen').classList.remove('hidden');
-        document.getElementById('student-name').value = '';
-        document.getElementById('student-email').value = '';
-    }
-
-    // ==========================================
-    // 4. 驾驶交互事件 (长按)
-    const goBtn = document.getElementById('canvas-drive-btn');
+        // ==========================================
+        // 4. 驾驶交互事件 (长按)
+        const goBtn = document.getElementById('canvas-drive-btn');
 
         function startDriveAction(e) {
             if (e) e.preventDefault();
@@ -794,20 +799,20 @@
                 currentSpeed = Math.max(currentSpeed - dt * 0.15, 0);
 
                 // 检查是否开完了 5 秒
-            if (canDrive && driveTimeAccumulated >= TOTAL_DRIVE_TIME_NEEDED) {
-                canDrive = false;
-                isHoldingGo = false;
-                window.stopEngineSound();
-                
-                document.getElementById('canvas-drive-btn').classList.add('hidden');
-                
-                // 驾驶完成后显示 Continue 按钮，等待用户手动点击进入下一题
-                document.getElementById('continue-btn').classList.remove('hidden');
+                if (canDrive && driveTimeAccumulated >= TOTAL_DRIVE_TIME_NEEDED) {
+                    canDrive = false;
+                    isHoldingGo = false;
+                    window.stopEngineSound();
+                    
+                    document.getElementById('canvas-drive-btn').classList.add('hidden');
+                    
+                    // 驾驶完成后显示 Continue 按钮，等待用户手动点击进入下一题
+                    document.getElementById('continue-btn').classList.remove('hidden');
+                }
             }
-        }
 
-        // 更新仪表盘UI
-        document.getElementById('speed-text').innerText = Math.floor(currentSpeed);
+            // 更新仪表盘UI
+            document.getElementById('speed-text').innerText = Math.floor(currentSpeed);
             document.getElementById('speed-bar').style.height = `${(currentSpeed / 120) * 100}%`;
             
             // 更新顶部总体进度条
