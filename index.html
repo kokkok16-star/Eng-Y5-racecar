@@ -21,11 +21,11 @@
         #speed-bar { transition: height 0.1s linear, background-color 0.1s linear; }
     </style>
 </head>
-<!-- Removed overflow-hidden from body class to ensure inputs behave correctly on mobile -->
-<body class="bg-gray-50 flex flex-col h-screen w-screen">
+<!-- 模仿 index-2 的结构：移除 body 的固定高度，让登录页回归标准文档流，完美解决 iOS 光标丢失问题 -->
+<body class="bg-gray-50">
 
     <!-- 登录界面 -->
-    <div id="login-screen" class="absolute inset-0 bg-gradient-to-br from-yellow-400 via-lime-500 to-emerald-700 z-50 overflow-y-auto flex items-center justify-center p-4">
+    <div id="login-screen" class="min-h-screen w-full bg-gradient-to-br from-yellow-400 via-lime-500 to-emerald-700 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl p-6 md:p-10 relative">
             <!-- 教师专区按钮 -->
             <button onclick="showTeacherLogin()" class="absolute top-4 right-4 md:top-6 md:right-6 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm py-1.5 px-4 rounded-full flex items-center gap-2 transition-colors">
@@ -43,12 +43,11 @@
                 <div class="flex-1 flex flex-col gap-5">
                     <div>
                         <label class="block text-gray-700 font-bold mb-2 text-sm">学生姓名 (中文 / 英文):</label>
-                        <!-- Added explicit user-select styles to ensure cursor appears on all mobile browsers -->
-                        <input type="text" id="student-name" placeholder="例如: 张小明 / Tan Ah Kow" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent" style="-webkit-user-select: text; user-select: text;">
+                        <input type="text" id="student-name" placeholder="例如: 张小明 / Tan Ah Kow" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent">
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-2 text-sm">教育部邮箱 (Email):</label>
-                        <input type="email" id="student-email" placeholder="例如: m-1234567@moe-dl.edu.my" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent" style="-webkit-user-select: text; user-select: text;">
+                        <input type="email" id="student-email" placeholder="例如: m-1234567@moe-dl.edu.my" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent">
                     </div>
                     <button onclick="startGame()" class="w-full bg-lime-600 hover:bg-lime-700 text-white font-bold py-4 rounded-lg text-lg shadow-lg transition-transform active:scale-95 mt-2 flex justify-center items-center gap-2">
                         开始答题 🚀
@@ -68,8 +67,8 @@
         </div>
     </div>
 
-    <!-- 游戏主界面 (初始隐藏) - Added overflow-hidden here to contain the game view -->
-    <div id="game-screen" class="hidden flex flex-col h-full w-full overflow-hidden">
+    <!-- 游戏主界面 (初始隐藏) - 设置为全屏 fixed 确保游戏时无法滚动 -->
+    <div id="game-screen" class="hidden flex flex-col h-screen w-screen overflow-hidden fixed inset-0 bg-gray-50 z-40">
         <!-- 上半部分：3D 游戏画面 -->
         <div id="canvas-container" class="relative bg-blue-200 select-none">
             <canvas id="game-canvas" class="w-full h-full block"></canvas>
@@ -138,7 +137,7 @@
             <p id="modal-msg" class="text-gray-600 mb-6">这里是消息内容。</p>
             <!-- 密码输入区域 (仅教师专区显示) -->
             <div id="password-area" class="hidden mb-6">
-                <input type="password" id="teacher-pwd" placeholder="请输入密码" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500" style="-webkit-user-select: text; user-select: text;">
+                <input type="password" id="teacher-pwd" placeholder="请输入密码" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500">
             </div>
             <div class="flex justify-center gap-3">
                 <button id="modal-cancel-btn" onclick="closeModal()" class="hidden bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">取消</button>
