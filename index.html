@@ -174,27 +174,28 @@
             console.error("Firebase 初始化失败:", e);
         }
 
+        // English Plus 1 (Malaysia) - Unit 5-7 Grammar & Vocab
         const questions = [
-            { q: "I _____ a great movie last night.", options: ["see", "saw", "seen", "seeing"], correct: 1, exp: "解析：句末的 last night 表明动作发生在过去，因此需要使用动词的过去式 saw。" },
-            { q: "There _____ a tense football match yesterday.", options: ["was", "is", "are", "were"], correct: 0, exp: "解析：yesterday表示过去时，且主语 a tense football match 是单数，所以用 was。" },
-            { q: "She _____ to the park every morning.", options: ["go", "going", "goes", "gone"], correct: 2, exp: "解析：every morning 表示经常性习惯，一般现在时。主语 She 是第三人称单数，动词加 -es，即 goes。" },
-            { q: "They _____ playing tennis right now.", options: ["was", "is", "were", "are"], correct: 3, exp: "解析：right now 表示现在进行时，主语 They 是复数，所以搭配 be 动词 are。" },
-            { q: "He has _____ his homework already.", options: ["do", "did", "doing", "done"], correct: 3, exp: "解析：has + 动词过去分词构成现在完成时。do 的过去分词是 done。" },
-            { q: "We _____ to London next week.", options: ["travel", "travelled", "are travelling", "have travelled"], correct: 2, exp: "解析：next week 表将来，可以用现在进行时表按计划将要发生的动作。" },
-            { q: "If it rains tomorrow, we _____ at home.", options: ["stay", "will stay", "stayed", "are staying"], correct: 1, exp: "解析：主将从现，if条件句用一般现在时，主句用一般将来时。" },
-            { q: "She is the _____ girl in our class.", options: ["tall", "taller", "tallest", "most tall"], correct: 2, exp: "解析：in our class 表明是在三者或以上的范围内比较，用最高级。" },
-            { q: "I have been living here _____ 2010.", options: ["since", "for", "in", "from"], correct: 0, exp: "解析：since + 具体的过去时间点，常用于现在完成时。" },
-            { q: "He is interested _____ learning new languages.", options: ["on", "at", "in", "about"], correct: 2, exp: "解析：固定搭配 be interested in (对...感兴趣)。" },
-            { q: "Would you mind _____ the window?", options: ["open", "to open", "opening", "opened"], correct: 2, exp: "解析：mind doing sth. (介意做某事)。" },
-            { q: "The book _____ by a famous author last year.", options: ["wrote", "was written", "is written", "has written"], correct: 1, exp: "解析：主语 book 和 write 是被动关系，且 last year 表过去，用一般过去时的被动语态。" },
-            { q: "Neither he nor I _____ wrong.", options: ["is", "am", "are", "be"], correct: 1, exp: "解析：neither...nor... 连接主语时，谓语动词遵循就近原则，离 I 近，用 am。" },
-            { q: "It's time you _____ to bed.", options: ["go", "went", "going", "will go"], correct: 1, exp: "解析：It's time (that) sb. did sth. 是一种虚拟语气，用过去式。" },
-            { q: "By the time we arrived, the train _____.", options: ["left", "has left", "had left", "was leaving"], correct: 2, exp: "解析：by the time + 过去时的句子，主句常用过去完成时，表示在过去某个时间之前已经完成的动作。" },
-            { q: "He asked me _____.", options: ["where did I live", "where I lived", "where do I live", "where I live"], correct: 1, exp: "解析：宾语从句需用陈述句语序，且主句是过去时，从句也要用相应的过去时态。" },
-            { q: "I look forward to _____ from you soon.", options: ["hear", "hearing", "heard", "be heard"], correct: 1, exp: "解析：look forward to 中的 to 是介词，后面接动名词 v.-ing。" },
-            { q: "Hardly had I reached the station _____ the train left.", options: ["when", "than", "then", "and"], correct: 0, exp: "解析：固定句型 Hardly...when... (一...就...)。" },
-            { q: "She _____ have finished the work, but she was lazy.", options: ["must", "could", "should", "can"], correct: 1, exp: "解析：could have done 表示本可以做某事但实际上未做。" },
-            { q: "Not only _____ to the party, but she also brought a gift.", options: ["did she come", "she came", "she did come", "came she"], correct: 0, exp: "解析：Not only 置于句首，所在的句子需要部分倒装。" }
+            { q: "A _____ is a long orange vegetable.", options: ["potato", "carrot", "beef", "cheese"], correct: 1, exp: "解析：carrot 意为“胡萝卜”，是一种橙色的长条蔬菜 (Unit 5)。" },
+            { q: "Eating too much _____ is bad for your teeth.", options: ["vegetables", "water", "sugar", "salad"], correct: 2, exp: "解析：sugar 意为“糖”，吃太多对牙齿不好，属于 unhealthy food (Unit 5)。" },
+            { q: "Are there _____ eggs in the box?", options: ["some", "much", "a", "any"], correct: 3, exp: "解析：在疑问句中，通常使用 any 来修饰可数名词复数或不可数名词 (Unit 5)。" },
+            { q: "I usually drink _____ milk in the morning.", options: ["any", "some", "many", "a"], correct: 1, exp: "解析：在肯定句中，修饰不可数名词 milk 通常使用 some (Unit 5)。" },
+            { q: "How _____ time do we have before the train leaves?", options: ["many", "much", "any", "some"], correct: 1, exp: "解析：time 在这里表示“时间”，是不可数名词，提问要用 How much (Unit 5)。" },
+            { q: "There are a _____ of people at the concert.", options: ["much", "many", "lot", "some"], correct: 2, exp: "解析：a lot of 意为“许多”，固定搭配，可修饰可数和不可数名词 (Unit 5)。" },
+            { q: "You wear a white suit and use a belt in _____.", options: ["swimming", "judo", "basketball", "cycling"], correct: 1, exp: "解析：judo 意为“柔道”，运动时需要穿白色道服和系带 (Unit 6)。" },
+            { q: "We went _____ in the mountains last winter.", options: ["skiing", "tennis", "athletics", "football"], correct: 0, exp: "解析：skiing 意为“滑雪”，通常在冬天的高山上进行 (Unit 6)。" },
+            { q: "You swim in a swimming _____.", options: ["court", "pitch", "pool", "track"], correct: 2, exp: "解析：swimming pool 意为“游泳池”。court 是球场，pitch 是足球/草地场 (Unit 6)。" },
+            { q: "My brother _____ a new bicycle last week.", options: ["buy", "buys", "bought", "buying"], correct: 2, exp: "解析：last week 表示一般过去时，buy 的过去式是不规则动词 bought (Unit 6)。" },
+            { q: "They _____ the race because they were too slow.", options: ["didn't win", "don't win", "didn't won", "aren't winning"], correct: 0, exp: "解析：一般过去时的否定句结构为：didn't + 动词原形 (Unit 6)。" },
+            { q: "I _____ a letter to my friend yesterday.", options: ["write", "wrote", "written", "writing"], correct: 1, exp: "解析：yesterday 是一般过去时标志，write 的过去式是 wrote (Unit 6)。" },
+            { q: "_____ she go to the supermarket?", options: ["Does", "Do", "Is", "Did"], correct: 3, exp: "解析：一般过去时的疑问句，句首需要用助动词 Did (Unit 6/7)。" },
+            { q: "My grandfather is old and has a white _____.", options: ["beard", "hair", "glasses", "tall"], correct: 0, exp: "解析：beard 意为“胡子/络腮胡”。通常用来描述面部特征 (Unit 7)。" },
+            { q: "She wears _____ to read books.", options: ["glasses", "eyes", "ears", "hair"], correct: 0, exp: "解析：glasses 意为“眼镜”，用来形容人的外貌特征和配件 (Unit 7)。" },
+            { q: "He isn't tall or short. He is _____ height.", options: ["medium", "average", "middle", "normal"], correct: 1, exp: "解析：average height 意为“中等/普通身高”，是描述身高的固定词组 (Unit 7)。" },
+            { q: "This present is for my sister. Give it to _____.", options: ["she", "him", "her", "me"], correct: 2, exp: "解析：介词 to 后面接宾格代词，my sister 是女性，因此用 her (Unit 7)。" },
+            { q: "We are playing a game. Come and join _____!", options: ["we", "our", "us", "them"], correct: 2, exp: "解析：join 是动词，后面接宾格代词。代替 we 的宾格是 us (Unit 7)。" },
+            { q: "Where _____ your parents born?", options: ["was", "were", "are", "did"], correct: 1, exp: "解析：parents 是复数，且询问出生用过去时，be动词应使用 were (Unit 7)。" },
+            { q: "The weather _____ very cold last night.", options: ["were", "is", "did", "was"], correct: 3, exp: "解析：weather 是不可数名词单数，last night 是过去时，因此 be动词用 was (Unit 7)。" }
         ];
 
         document.getElementById('q-total').innerText = questions.length;
